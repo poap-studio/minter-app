@@ -106,17 +106,22 @@ window.MintPage = {
     appEl.innerHTML = `
       <!-- SCREEN: LANDING -->
       <div id="screen-landing" class="screen active">
-        <div class="landing-container">
+        <div class="mint-container">
 
-          <!-- Profile Card -->
-          <div class="profile-card">
-            <div class="profile-photo-wrapper">
-              <img src="${PROFILE_PHOTO}" alt="Selin Suntay" class="profile-photo">
+          <!-- Header Logo -->
+          <header class="mint-header">
+            <img src="${headerLogoSrc}" alt="Company Logo" class="header-logo">
+          </header>
+
+          <!-- POAP Card -->
+          <div class="poap-card">
+            <div class="card-badge">
+              <img src="${raw.card_logo_url || headerLogoSrc}" alt="Badge" class="card-badge-img">
             </div>
-            <h1 class="profile-name">SELIN<br>SUNTAY</h1>
-            <div class="profile-divider"></div>
-            <p class="profile-title">VENTURE MANAGER</p>
-            <img id="profile-logo" src="${headerLogoSrc}" alt="bpifrance" class="profile-logo">
+            <div class="poap-artwork">
+              <img src="${artworkSrc}" alt="POAP Artwork" class="artwork-image">
+            </div>
+            <h2 class="poap-title">${detailsTitle}</h2>
           </div>
 
           <!-- CTA -->
@@ -143,15 +148,13 @@ window.MintPage = {
           </div>
 
           <!-- Footer -->
-          <footer class="landing-footer">
+          <footer class="mint-footer">
             <div class="footer-top">
               <div class="footer-left">
-                <img src="${PROFILE_PHOTO}" alt="Selin Suntay" class="footer-photo">
-                <span class="footer-name">Selin<br>Suntay</span>
+                <img src="${raw.footer_logo_url || footerLogoSrc}" alt="Footer Logo" class="footer-logo-img">
               </div>
               <div class="footer-right">
-                <span class="footer-powered">Powered by</span>
-                <img src="${footerLogoSrc}" alt="POAP STUDIO" class="footer-logo">
+                <span class="footer-powered">Powered by POAP STUDIO</span>
               </div>
             </div>
             <div class="footer-links">
