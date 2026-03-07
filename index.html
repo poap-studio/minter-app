@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Minter App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Fonts loaded dynamically from backend -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- Loading screen always present; hides after route renders -->
+  <div id="loading-screen">
+    <div class="splash-content">
+      <img id="splash-logo" class="splash-logo" style="display: none;" alt="Logo">
+      <div class="loader-spinner"></div>
+    </div>
+  </div>
+
+  <!-- SPA root: all pages rendered here -->
+  <div id="app"></div>
+
+  <script src="/js/pages/mint.js"></script>
+  <script src="/js/pages/mycollectible.js"></script>
+  <script src="/js/pages/error.js"></script>
+  <script src="/js/router.js"></script>
+</body>
+</html>
