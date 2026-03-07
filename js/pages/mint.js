@@ -115,13 +115,15 @@ window.MintPage = {
 
           <!-- POAP Card -->
           <div class="poap-card">
-            <div class="card-badge">
-              <img src="${raw.card_logo_url || headerLogoSrc}" alt="Badge" class="card-badge-img">
+            <div class="poap-card-inner">
+              <div class="card-badge">
+                <img src="${raw.card_logo_url || headerLogoSrc}" alt="Badge" class="card-badge-img">
+              </div>
+              <div class="poap-artwork">
+                <img src="${artworkSrc}" alt="POAP Artwork" class="artwork-image">
+              </div>
+              <h2 class="poap-title">${detailsTitle}</h2>
             </div>
-            <div class="poap-artwork">
-              <img src="${artworkSrc}" alt="POAP Artwork" class="artwork-image">
-            </div>
-            <h2 class="poap-title">${detailsTitle}</h2>
           </div>
 
           <!-- CTA -->

@@ -164,8 +164,12 @@ html, body {
   }
   
   .artwork-image {
-    width: 240px;
-    height: 240px;
+    width: 220px;
+    height: 220px;
+  }
+  
+  .poap-card {
+    max-width: 360px;
   }
   
   .poap-title {
@@ -218,26 +222,43 @@ html, body {
   object-fit: contain;
 }
 
-/* POAP Card */
+/* POAP Card Container - Outer card effect */
 .poap-card {
+  width: 85%;
+  max-width: 320px;
+  margin: 0 auto 24px;
+  position: relative;
+  text-align: center;
+}
+
+.poap-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+  border-radius: 22px;
+  z-index: -1;
+}
+
+.poap-card-inner {
   background: rgba(255,255,255,0.25);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.4);
   border-radius: 20px;
-  padding: 32px 28px 28px;
-  width: 100%;
-  margin-bottom: 24px;
+  padding: 40px 24px 32px;
   position: relative;
-  text-align: center;
 }
 
 .card-badge {
   position: absolute;
   top: 16px;
   left: 16px;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
 }
 
 .card-badge-img {
@@ -248,17 +269,16 @@ html, body {
 }
 
 .poap-artwork {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   justify-content: center;
 }
 
 .artwork-image {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
   object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.3);
 }
 
 .poap-title {
