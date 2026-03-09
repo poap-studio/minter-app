@@ -239,12 +239,11 @@ html, body {
   padding: 16px 0 0 0;
   position: relative;
   
-  /* Premium glassmorphism effect - TEST */
-  background: linear-gradient(149deg, rgba(255, 0, 0, 0.8) 6.81%, rgba(0, 255, 0, 0.8) 26.4%, rgba(0, 0, 255, 0.8) 64.4%, rgba(255, 255, 255, 0.2) 88.1%);
+  /* Premium glassmorphism effect */
+  background: linear-gradient(149deg, rgba(255, 255, 255, 0.2) 6.81%, rgba(255, 255, 255, 0.01) 26.4%, rgba(255, 255, 255, 0.01) 64.4%, rgba(255, 255, 255, 0.2) 88.1%);
   border-radius: 12px;
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 3px solid red;
   
   /* Subtle breathing animation */
   animation: cardBreathing 4s ease-in-out infinite;
