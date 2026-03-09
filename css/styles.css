@@ -656,6 +656,10 @@ html, body {
   margin-top: 20px; margin-bottom: 20px;
   line-height: 1.4;
   text-align: center;
+  text-wrap: balance;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .form-terms a {
   color: var(--body-text-color); font-weight: 600;
