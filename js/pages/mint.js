@@ -201,6 +201,48 @@ window.MintPage = {
     };
   },
 
+  // ── Render date and location section ──
+  renderDateLocationSection(cms) {
+    const date = cms?.date;
+    const location = cms?.location;
+    
+    // Si ambos son null, no mostrar nada
+    if (!date && !location) {
+      return '';
+    }
+    
+    // Si solo uno existe, centrarlo; si ambos existen, lado a lado
+    const hasDate = date && date.trim();
+    const hasLocation = location && location.trim();
+    const centerClass = (hasDate && hasLocation) ? '' : 'center-single';
+    
+    return `
+      <div class="details-meta ${centerClass}">
+        ${hasDate ? `
+          <div class="meta-item">
+            <svg class="meta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span class="meta-text">${hasDate}</span>
+          </div>
+        ` : ''}
+        ${hasLocation ? `
+          <div class="meta-item">
+            <svg class="meta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span class="meta-text">${hasLocation}</span>
+          </div>
+        ` : ''}
+        <div class="meta-divider"></div>
+      </div>
+    `;
+  },
+
   // ── Inject HTML into #app ──
   render() {
     const { collection, code } = window.App.route;
@@ -264,6 +306,7 @@ window.MintPage = {
           <div id="details-panel" class="details-panel">
             <div class="details-content">
               <h3 id="details-heading" class="details-heading">${detailsTitle}</h3>
+              ${this.renderDateLocationSection(cms)}
               <p id="details-text" class="details-text">${detailsText}</p>
             </div>
           </div>
