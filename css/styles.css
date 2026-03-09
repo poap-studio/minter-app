@@ -495,6 +495,23 @@ html, body {
 .details-meta:not(.center-single) {
   justify-content: center;
 }
+
+/* My Collectible - Always expanded details */
+.details-expanded {
+  display: block !important;
+  opacity: 1 !important;
+  max-height: none !important;
+  margin-top: 24px;
+}
+
+/* My Collectible - Button as link */
+.cta-button[href] {
+  cursor: pointer;
+  text-decoration: none;
+}
+.cta-button[href]:hover {
+  opacity: 0.9;
+}
 .meta-item {
   display: flex;
   align-items: center;
