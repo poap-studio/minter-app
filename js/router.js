@@ -212,9 +212,9 @@ async function initSplash(collection, code) {
       const setupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}&code=${code}`);
       setupData = await setupRes.json();
       
-      // Backend validation: Check response
-      if (!setupData.success) {
-        console.error('[Router] Backend validation failed:', setupData);
+      // Backend validation: Check if we have usable data (theme, cms, etc.)
+      if (!setupData.success && (!setupData.theme && !setupData.cms)) {
+        console.error('[Router] Backend validation failed with no usable data:', setupData);
         // Load collection theme for proper error page branding
         try {
           const collectionSetupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}`);
