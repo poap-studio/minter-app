@@ -23,6 +23,8 @@ window.MintPage = {
     const options   = field.options || [];   // edge already applies override_options
     const reqAttr   = required ? 'required' : '';
     const reqMark   = required ? ' <span style="color:var(--btn-bg-color)">*</span>' : '';
+    const walletClass = field.for_wallet ? 'cf-for-wallet' : '';
+    const wrapperClass = walletClass ? `class="form-field ${walletClass}"` : 'class="form-field"';
 
     switch (field.field_type) {
       case 'text':
@@ -30,53 +32,65 @@ window.MintPage = {
       case 'number':
       case 'phone':
         return `
-          <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
-          <input type="${field.field_type === 'phone' ? 'tel' : field.field_type}"
-            id="cf_${name}" name="cf_${name}" class="form-input"
-            placeholder="${label}" ${reqAttr}>`;
+          <div ${wrapperClass}>
+            <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
+            <input type="${field.field_type === 'phone' ? 'tel' : field.field_type}"
+              id="cf_${name}" name="cf_${name}" class="form-input"
+              placeholder="${label}" ${reqAttr}>
+          </div>`;
 
       case 'textarea':
         return `
-          <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
-          <textarea id="cf_${name}" name="cf_${name}" class="form-input"
-            placeholder="${label}" rows="3" ${reqAttr}></textarea>`;
+          <div ${wrapperClass}>
+            <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
+            <textarea id="cf_${name}" name="cf_${name}" class="form-input"
+              placeholder="${label}" rows="3" ${reqAttr}></textarea>
+          </div>`;
 
       case 'select':
         return `
-          <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
-          <div class="select-wrapper">
-            <select id="cf_${name}" name="cf_${name}" class="form-select" ${reqAttr}>
-              <option value="" disabled selected>${label}</option>
-              ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
-            </select>
-            <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <div ${wrapperClass}>
+            <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
+            <div class="select-wrapper">
+              <select id="cf_${name}" name="cf_${name}" class="form-select" ${reqAttr}>
+                <option value="" disabled selected>${label}</option>
+                ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
+              </select>
+              <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>`;
 
       case 'checkbox':
         return `
-          <div class="form-checkbox-row">
-            <input type="checkbox" id="cf_${name}" name="cf_${name}" class="form-checkbox" ${reqAttr}>
-            <label class="form-checkbox-label" for="cf_${name}">${label}${reqMark}</label>
+          <div ${wrapperClass}>
+            <div class="form-checkbox-row">
+              <input type="checkbox" id="cf_${name}" name="cf_${name}" class="form-checkbox" ${reqAttr}>
+              <label class="form-checkbox-label" for="cf_${name}">${label}${reqMark}</label>
+            </div>
           </div>`;
 
       case 'radio':
         return `
-          <fieldset class="form-radio-group">
-            <legend class="form-label">${label}${reqMark}</legend>
-            ${options.map((o, i) => `
-              <div class="form-radio-row">
-                <input type="radio" id="cf_${name}_${i}" name="cf_${name}" value="${o}" ${reqAttr}>
-                <label for="cf_${name}_${i}">${o}</label>
-              </div>`).join('')}
-          </fieldset>`;
+          <div ${wrapperClass}>
+            <fieldset class="form-radio-group">
+              <legend class="form-label">${label}${reqMark}</legend>
+              ${options.map((o, i) => `
+                <div class="form-radio-row">
+                  <input type="radio" id="cf_${name}_${i}" name="cf_${name}" value="${o}" ${reqAttr}>
+                  <label for="cf_${name}_${i}">${o}</label>
+                </div>`).join('')}
+            </fieldset>
+          </div>`;
 
       default:
         return `
-          <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
-          <input type="text" id="cf_${name}" name="cf_${name}" class="form-input"
-            placeholder="${label}" ${reqAttr}>`;
+          <div ${wrapperClass}>
+            <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
+            <input type="text" id="cf_${name}" name="cf_${name}" class="form-input"
+              placeholder="${label}" ${reqAttr}>
+          </div>`;
     }
   },
 
@@ -114,6 +128,59 @@ window.MintPage = {
     const fields = (window.App.data?.customFields || [])
       .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
     return fields.map(f => this.renderField(f)).join('');
+  },
+
+  // ── Address type detection ──
+  detectAddressType(input) {
+    const trimmed = input.trim().toLowerCase();
+    
+    // EVM wallet address
+    if (/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
+      return 'wallet';
+    }
+    
+    // ENS/ETH domains (including subdomains)
+    if (/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.(eth|ens)$/i.test(trimmed)) {
+      return 'ens'; 
+    }
+    
+    // Email (classic pattern)
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return 'email';
+    }
+    
+    return 'unknown';
+  },
+
+  // ── Toggle wallet fields visibility ──
+  toggleWalletFields(isWalletType) {
+    const walletFields = document.querySelectorAll('.cf-for-wallet');
+    walletFields.forEach(field => {
+      if (isWalletType) {
+        field.style.display = 'block';
+        setTimeout(() => {
+          field.classList.add('visible');
+        }, 10); // Small delay for smooth transition
+      } else {
+        field.classList.remove('visible');
+        setTimeout(() => {
+          field.style.display = 'none';
+        }, 300);
+      }
+    });
+  },
+
+  // ── Debounce helper ──
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   },
 
   // ── Inject HTML into #app ──
@@ -295,6 +362,32 @@ window.MintPage = {
     formOverlay.addEventListener('click', (e) => {
       if (e.target === formOverlay) closeForm();
     });
+
+    // ── Hybrid address detection for wallet fields ──
+    const addressField = claimForm.querySelector('input[name="wallet_or_email"]');
+    if (addressField) {
+      const validateAddress = () => {
+        const addressType = this.detectAddressType(addressField.value);
+        const isWalletType = addressType === 'wallet' || addressType === 'ens';
+        this.toggleWalletFields(isWalletType);
+        console.log('[MintPage] Address type detected:', addressType, 'Wallet fields visible:', isWalletType);
+      };
+
+      // Initial state: hide wallet fields
+      this.toggleWalletFields(false);
+
+      // onBlur: Always check when field loses focus  
+      addressField.addEventListener('blur', validateAddress);
+
+      // onInput: Debounced validation during typing
+      const debouncedValidation = this.debounce(validateAddress, 800);
+      addressField.addEventListener('input', debouncedValidation);
+
+      // onPaste: Immediate validation after paste
+      addressField.addEventListener('paste', () => {
+        setTimeout(validateAddress, 100); // Small delay to let paste complete
+      });
+    }
 
     // ── Form submit ──
     claimForm.addEventListener('submit', async (e) => {

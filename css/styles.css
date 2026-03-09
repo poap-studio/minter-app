@@ -515,6 +515,22 @@ html, body {
   text-decoration: underline;
 }
 
+/* Wallet field transitions */
+.form-field {
+  margin-bottom: 0;
+}
+
+.cf-for-wallet {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cf-for-wallet.visible {
+  display: block;
+  opacity: 1;
+}
+
 .cta-form { margin-top: 4px; }
 
 /* ===== SCREEN 3: CONFIRMATION ===== */
