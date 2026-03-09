@@ -1,12 +1,12 @@
 /* ===== CSS Variables (defaults, overridden by backend) ===== */
 :root {
-  --page-bg-color: #F5C518;
-  --page-bg-image: url('https://xkfwlcyntfcfouvgmdvj.supabase.co/storage/v1/object/public/experience-assets/bg-images/bg.svg');
+  --page-bg-color: #ffffff;
+  --page-bg-image: none;
   --body-bg-color: #ffffff;
-  --body-text-color: #071A39;
+  --body-text-color: #000000;
   --btn-bg-color: #4b3d3c;
   --btn-text-color: #ffffff;
-  --footer-text-color: #071A39;
+  --footer-text-color: #000000;
   --highlight-color: #071A39;
   --font-title: 'Barlow Condensed', sans-serif;
   --font-body: 'IBM Plex Sans', sans-serif;
