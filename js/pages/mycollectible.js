@@ -74,9 +74,9 @@ window.MycollectiblePage = {
     const detailsTitle   = cms.title;
     const detailsText    = cms.collected_description;
     
-    // Button texts and URLs
-    const buttonText = cmsDefaults.mycollectible_button_text || 'View Collectible';
-    const buttonUrl = cmsDefaults.mycollectible_button_url || '#';
+    // Button texts and URLs (hide if null)
+    const buttonText = cmsDefaults.mycollectible_button_text;
+    const buttonUrl = cmsDefaults.mycollectible_button_url;
     
     // Legal URLs with fallbacks
     const termsUrl = setup.terms_url || '#';
@@ -94,7 +94,7 @@ window.MycollectiblePage = {
     if (!appEl) { console.error('[MycollectiblePage] #app not found'); window.hideLoading(); return; }
     appEl.innerHTML = `
       <!-- SCREEN: MY COLLECTIBLE -->
-      <div id="screen-mycollectible" class="screen active">
+      <div id="screen-landing" class="screen active">
         <div class="mint-container">
 
           <!-- Header Logo -->
@@ -142,12 +142,14 @@ window.MycollectiblePage = {
             </div>
           </div>
 
-          <!-- CTA Button -->
-          <div class="cta-section">
-            <a href="${buttonUrl}" target="_blank" class="cta-button" style="text-decoration: none; display: flex;">
-              <span class="cta-text">${buttonText}</span>
-            </a>
-          </div>
+          <!-- CTA Button (only if configured) -->
+          ${buttonText && buttonUrl && buttonUrl !== '#' ? `
+            <div class="cta-section">
+              <a href="${buttonUrl}" target="_blank" class="cta-button" style="text-decoration: none; display: flex;">
+                <span class="cta-text">${buttonText}</span>
+              </a>
+            </div>
+          ` : ''}
 
           <!-- Details Panel (Always Expanded) -->
           <div class="details-panel details-expanded">
@@ -178,6 +180,10 @@ window.MycollectiblePage = {
       </div>
     `;
 
+    // Apply screen visibility (same as mint page)
+    const screenEl = document.getElementById('screen-landing');
+    if (screenEl) screenEl.classList.add('visible');
+    
     // No JavaScript interactions needed (no form, no toggles)
     window.hideLoading();
   },
