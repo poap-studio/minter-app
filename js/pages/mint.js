@@ -259,8 +259,8 @@ window.MintPage = {
             <span class="meta-text">${hasLocation}</span>
           </div>
         ` : ''}
-        <div class="meta-divider"></div>
       </div>
+      <div class="meta-divider"></div>
     `;
   },
 

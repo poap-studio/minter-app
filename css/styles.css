@@ -469,17 +469,16 @@ html, body {
 
 /* Date and Location Meta Section */
 .details-meta {
-  margin: 12px 0 16px 0;
+  margin: 12px 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 32px;
 }
 .details-meta.center-single {
-  display: flex;
   justify-content: center;
 }
 .details-meta:not(.center-single) {
-  display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 32px;
 }
 .meta-item {
   display: flex;
@@ -504,7 +503,7 @@ html, body {
   height: 1px;
   background: var(--body-text-color);
   opacity: 0.15;
-  margin: 8px 0 0 0;
+  margin: 8px 0 12px 0;
 }
 
 /* Footer — uses footer text color */
