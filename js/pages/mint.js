@@ -97,29 +97,35 @@ window.MintPage = {
   // ── Render main address field with conditional label ──
   renderMainAddressField() {
     const mintingType = window.App.data?.setup?.minting_type || 'all';
-    let label, inputType, placeholder;
+    let label, inputType, placeholder, errorMessage;
     
     switch (mintingType) {
       case 'mail':
         label = 'Enter your email:';
         inputType = 'email';
         placeholder = 'your@email.com';
+        errorMessage = 'Please enter a valid email address';
         break;
       case 'wallet':
         label = 'Enter your wallet address or ENS:';
         inputType = 'text';
         placeholder = 'Wallet / ENS';
+        errorMessage = 'Please enter a valid wallet address or ENS domain';
         break;
       default: // 'all'
         label = 'Enter your wallet address, ENS or email:';
         inputType = 'text';
         placeholder = 'Wallet / ENS / Email';
+        errorMessage = 'Please enter a valid wallet address, ENS domain or email';
     }
     
     return `
       <label class="form-label" for="wallet_or_email">${label} <span style="color:var(--btn-bg-color)">*</span></label>
       <input type="${inputType}" id="wallet_or_email" name="wallet_or_email" class="form-input" 
         placeholder="${placeholder}" required>
+      <div id="address-format-error" class="address-error" style="display:none;">
+        ${errorMessage}
+      </div>
     `;
   },
 
@@ -150,6 +156,18 @@ window.MintPage = {
     }
     
     return 'unknown';
+  },
+
+  // ── Validate address format based on minting type ──
+  isValidAddressFormat(addressType, mintingType) {
+    switch (mintingType) {
+      case 'mail':
+        return addressType === 'email';
+      case 'wallet':
+        return addressType === 'wallet' || addressType === 'ens';
+      default: // 'all'
+        return addressType === 'wallet' || addressType === 'ens' || addressType === 'email';
+    }
   },
 
   // ── Toggle wallet fields visibility ──
@@ -368,9 +386,31 @@ window.MintPage = {
     if (addressField) {
       const validateAddress = () => {
         const addressType = this.detectAddressType(addressField.value);
+        const mintingType = window.App.data?.setup?.minting_type || 'all';
         const isWalletType = addressType === 'wallet' || addressType === 'ens';
+        const isValidFormat = this.isValidAddressFormat(addressType, mintingType);
+        const errorEl = document.getElementById('address-format-error');
+        
+        // Show/hide wallet fields
         this.toggleWalletFields(isWalletType);
-        console.log('[MintPage] Address type detected:', addressType, 'Wallet fields visible:', isWalletType);
+        
+        // Show/hide format error (only if field has enough content and format is invalid)
+        const trimmedValue = addressField.value.trim();
+        if (trimmedValue.length > 3 && !isValidFormat) {
+          if (errorEl) {
+            errorEl.style.display = 'block';
+            errorEl.style.opacity = '1';
+          }
+        } else {
+          if (errorEl) {
+            errorEl.style.opacity = '0';
+            setTimeout(() => {
+              errorEl.style.display = 'none';
+            }, 200);
+          }
+        }
+        
+        console.log('[MintPage] Address type detected:', addressType, 'Valid format:', isValidFormat, 'Wallet fields visible:', isWalletType);
       };
 
       // Initial state: hide wallet fields
