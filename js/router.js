@@ -162,7 +162,7 @@ async function renderRoute() {
 }
 
 function renderGlobalError() {
-  // RESET: Clear all CSS variables from previous collections
+  // AGGRESSIVE RESET: Clear all CSS variables from previous collections
   const root = document.documentElement;
   root.style.removeProperty('--page-bg-color');
   root.style.removeProperty('--page-bg-image');
@@ -175,30 +175,53 @@ function renderGlobalError() {
   root.style.removeProperty('--font-title');
   root.style.removeProperty('--font-body');
   
-  // RESET: Clear loading screen background
+  // AGGRESSIVE RESET: Force white background everywhere
+  document.documentElement.style.background = '#ffffff';
+  document.body.style.background = '#ffffff !important';
+  document.body.style.backgroundImage = 'none !important';
+  document.body.style.color = '#000000 !important';
+  
+  // RESET: Hide and clear loading screen completely
   const ls = document.getElementById('loading-screen');
-  if (ls) ls.style.backgroundColor = '#f5f5f5';
+  if (ls) {
+    ls.style.display = 'none';
+    ls.style.background = '#ffffff';
+    ls.style.backgroundImage = 'none';
+  }
   
-  // RESET: Clear body styles
-  document.body.style.background = '#ffffff';
-  document.body.style.color = '#000000';
+  // RESET: Clear any previous app content
+  const app = document.getElementById('app');
+  if (app) {
+    app.style.background = 'transparent';
+    app.style.backgroundImage = 'none';
+  }
   
-  // Render clean white page with black text
+  // Force hide loading immediately
+  window.hideLoading();
+  
+  // Render ONLY white page with black text, nothing else
   document.getElementById('app').innerHTML = `
     <div style="
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;
-      display: flex; align-items: center; justify-content: center;
-      background: #ffffff !important; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      position: fixed !important; top: 0 !important; left: 0 !important; 
+      right: 0 !important; bottom: 0 !important; z-index: 99999 !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      background: #ffffff !important; background-image: none !important;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
       color: #000000 !important;
     ">
-      <div style="text-align: center; padding: 2rem; color: #000000 !important;">
-        <h1 style="color: #000000 !important; margin-bottom: 1rem; font-weight: 400;">Page or collection not found</h1>
-        <p style="color: #000000 !important; margin-bottom: 2rem; opacity: 0.7;">Invalid URL</p>
-        <a href="/" style="color: #000000 !important; text-decoration: underline;">← Go back</a>
+      <div style="text-align: center !important; padding: 2rem !important; color: #000000 !important;">
+        <h1 style="color: #000000 !important; margin-bottom: 1rem !important; font-weight: 400 !important; background: transparent !important;">
+          Page or collection not found
+        </h1>
+        <p style="color: #000000 !important; margin-bottom: 2rem !important; opacity: 0.7 !important; background: transparent !important;">
+          Invalid URL
+        </p>
+        <a href="/" style="color: #000000 !important; text-decoration: underline !important; background: transparent !important;">
+          ← Go back
+        </a>
       </div>
     </div>
   `;
-  window.hideLoading();
 }
 
 // ===== Progressive Loading - SIMPLIFIED =====
