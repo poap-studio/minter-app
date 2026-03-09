@@ -371,7 +371,7 @@ window.MintPage = {
 
             ${this.renderCustomFields()}
 
-            <p class="form-terms">By clicking on the button below you agree with our
+            <p class="form-terms">By clicking on the button below you agree with our<br>
               <a href="${termsUrl}" target="_blank">Terms &amp; Conditions</a> and <a href="${privacyUrl}" target="_blank">Privacy Policy</a>
             </p>
             <p class="form-error" style="display:none; font-size:13px; margin-bottom:12px; text-align:center;"></p>
