@@ -276,6 +276,10 @@ window.MintPage = {
     const artworkSrc     = cms.main_image_url;
     const detailsTitle   = cms.title;
     const detailsText    = cms.available_description;
+    
+    // Button texts with fallbacks - store on object for access in init()
+    this.mintPageButtonText = cms.mintpage_button_text || 'Get Collectible';
+    this.mintFormButtonText = cms.mintform_button_text || 'Mint';
 
     const appEl = document.getElementById('app');
     if (!appEl) { console.error('[MintPage] #app not found'); window.hideLoading(); return; }
@@ -366,7 +370,7 @@ window.MintPage = {
             </p>
             <p class="form-error" style="display:none; font-size:13px; margin-bottom:12px; text-align:center;"></p>
             <button type="submit" class="cta-button cta-form">
-              <span class="cta-text">Collect</span>
+              <span class="cta-text">${this.mintFormButtonText}</span>
               <span class="cta-spinner" style="display:none;"></span>
             </button>
           </form>
@@ -412,7 +416,7 @@ window.MintPage = {
     function showCtaError(msg) {
       window.hideLoading(); // stay on mint, reveal page with error
       ctaGetCard.disabled = true;
-      ctaText.textContent = 'Get Collectible';
+      ctaText.textContent = window.MintPage.mintPageButtonText || 'Get Collectible';
       ctaSpinner.style.display = 'none';
       ctaGetCard.style.opacity = '0.4';
       ctaError.textContent = msg;
@@ -606,7 +610,7 @@ window.MintPage = {
         console.error('[Mint] Claim failed:', err);
         if (formError) { formError.textContent = 'Network error. Please check your connection.'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
       } finally {
-        btnText.textContent = 'Collect';
+        btnText.textContent = window.MintPage.mintFormButtonText || 'Collect';
         btnSpinner.style.display = 'none';
         btn.disabled = false;
       }
@@ -667,7 +671,7 @@ window.MintPage = {
         if (avail.success && avail.availability?.can_claim) {
           window.hideLoading(); // stay on mint, CTA ready
           ctaGetCard.disabled = false;
-          ctaText.textContent = 'Get Collectible';
+          ctaText.textContent = window.MintPage.mintPageButtonText || 'Get Collectible';
           ctaSpinner.style.display = 'none';
           ctaGetCard.style.opacity = '1';
           return;
@@ -681,7 +685,7 @@ window.MintPage = {
         console.error('[Mint] Availability check failed:', err);
         window.hideLoading();
         ctaGetCard.disabled = false;
-        ctaText.textContent = 'Get Collectible';
+        ctaText.textContent = window.MintPage.mintPageButtonText || 'Get Collectible';
         ctaSpinner.style.display = 'none';
         ctaGetCard.style.opacity = '1';
       }
@@ -698,7 +702,7 @@ window.MintPage = {
         if (avail.success && avail.availability?.can_claim) {
           window.hideLoading(); // stay on mint, CTA ready
           ctaGetCard.disabled = false;
-          ctaText.textContent = 'Get Collectible';
+          ctaText.textContent = window.MintPage.mintPageButtonText || 'Get Collectible';
           ctaSpinner.style.display = 'none';
           ctaGetCard.style.opacity = '1';
           return;
@@ -714,7 +718,7 @@ window.MintPage = {
         console.error('[Mint] Availability check failed (slug):', err);
         window.hideLoading();
         ctaGetCard.disabled = false;
-        ctaText.textContent = 'Get Collectible';
+        ctaText.textContent = window.MintPage.mintPageButtonText || 'Get Collectible';
         ctaSpinner.style.display = 'none';
         ctaGetCard.style.opacity = '1';
       }
