@@ -302,7 +302,7 @@ html, body {
 }
 
 .card-badge {
-  width: 16px;
+  width: 20px;
   height: unset;
   aspect-ratio: 1 / 1;
   display: block;
