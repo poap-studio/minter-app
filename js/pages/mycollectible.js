@@ -156,11 +156,9 @@ window.MycollectiblePage = {
 
           <!-- CTA Button (only if configured) -->
           ${buttonText && buttonUrl && buttonUrl !== '#' ? `
-            <div class="cta-section">
-              <a href="${buttonUrl}" target="_blank" class="cta-button" style="text-decoration: none; display: flex;">
-                <span class="cta-text">${buttonText}</span>
-              </a>
-            </div>
+            <a href="${buttonUrl}" target="_blank" class="cta-button" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+              <span class="cta-text">${buttonText}</span>
+            </a>
           ` : ''}
 
           <!-- Details Panel (Always Expanded) -->
