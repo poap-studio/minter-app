@@ -162,15 +162,39 @@ async function renderRoute() {
 }
 
 function renderGlobalError() {
+  // RESET: Clear all CSS variables from previous collections
+  const root = document.documentElement;
+  root.style.removeProperty('--page-bg-color');
+  root.style.removeProperty('--page-bg-image');
+  root.style.removeProperty('--body-text-color');
+  root.style.removeProperty('--body-bg-color');
+  root.style.removeProperty('--btn-bg-color');
+  root.style.removeProperty('--btn-text-color');
+  root.style.removeProperty('--footer-text-color');
+  root.style.removeProperty('--highlight-color');
+  root.style.removeProperty('--font-title');
+  root.style.removeProperty('--font-body');
+  
+  // RESET: Clear loading screen background
+  const ls = document.getElementById('loading-screen');
+  if (ls) ls.style.backgroundColor = '#f5f5f5';
+  
+  // RESET: Clear body styles
+  document.body.style.background = '#ffffff';
+  document.body.style.color = '#000000';
+  
+  // Render clean white page with black text
   document.getElementById('app').innerHTML = `
     <div style="
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; background: #f5f5f5; font-family: sans-serif;
+      background: #ffffff !important; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #000000 !important;
     ">
-      <div style="text-align: center; padding: 2rem;">
-        <h1 style="color: #d32f2f; margin-bottom: 1rem;">Collection not found</h1>
-        <p style="color: #666; margin-bottom: 2rem;">The collection you're looking for doesn't exist.</p>
-        <a href="/" style="color: #1976d2; text-decoration: none;">← Go back</a>
+      <div style="text-align: center; padding: 2rem; color: #000000 !important;">
+        <h1 style="color: #000000 !important; margin-bottom: 1rem; font-weight: 400;">Page or collection not found</h1>
+        <p style="color: #000000 !important; margin-bottom: 2rem; opacity: 0.7;">Invalid URL</p>
+        <a href="/" style="color: #000000 !important; text-decoration: underline;">← Go back</a>
       </div>
     </div>
   `;
