@@ -222,7 +222,7 @@ html, body {
   object-fit: contain;
 }
 
-/* POAP Card Container - Outer card effect */
+/* POAP Card Container - Premium glassmorphism */
 .poap-card {
   width: 85%;
   max-width: 320px;
@@ -231,63 +231,133 @@ html, body {
   text-align: center;
 }
 
-.poap-card::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
-  border-radius: 22px;
-  z-index: -1;
+.poap-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin: 0 20px;
+  padding: 16px 0 0 0;
+  position: relative;
+  
+  /* Premium glassmorphism effect */
+  background: linear-gradient(149deg, rgba(255, 255, 255, 0.2) 6.81%, rgba(255, 255, 255, 0.01) 26.4%, rgba(255, 255, 255, 0.01) 64.4%, rgba(255, 255, 255, 0.2) 88.1%);
+  border-radius: 12px;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  
+  /* Subtle breathing animation */
+  animation: cardBreathing 4s ease-in-out infinite;
 }
 
-.poap-card-inner {
-  background: rgba(255,255,255,0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.4);
-  border-radius: 20px;
-  padding: 40px 24px 32px;
+/* Border glow effect */
+.poap-card-inner::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  padding: 1px;
+  
+  /* Complex gradient border */
+  background: linear-gradient(154.92deg, rgba(255, 255, 255, 0.2) -1.01%, rgb(255, 255, 255) 17.32%, rgba(255, 255, 255, 0.2) 26.47%, rgba(255, 255, 255, 0.2) 81.49%, rgb(255, 255, 255) 86.9%, rgba(255, 255, 255, 0.2) 104.7%);
+  border-radius: 16px;
+  
+  /* Mask for border effect */
+  mask: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px) content-box, linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px);
+  mask-composite: xor;
+  -webkit-mask: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px) content-box, linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px);
+  -webkit-mask-composite: xor;
+}
+
+/* Content wrapper */
+.poap-card-content {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.75rem;
+  margin: 0 0 20px 0;
+  padding: 0 16px;
   position: relative;
+  z-index: 1;
+}
+
+/* Keyframe animations */
+@keyframes cardBreathing {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.02);
+    filter: brightness(1.05);
+  }
+}
+
+/* Card header with badge */
+.card-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0 0 4px 0;
+  padding: 0px;
 }
 
 .card-badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: unset;
+  aspect-ratio: 1 / 1;
+  display: block;
 }
 
 .card-badge-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 4px;
+  aspect-ratio: 1;
 }
 
+/* POAP artwork section */
 .poap-artwork {
-  margin-bottom: 24px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+  width: 100%;
+  height: unset;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
 }
 
 .artwork-image {
-  width: 180px;
-  height: 180px;
-  border-radius: 12px;
-  object-fit: cover;
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: unset;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* POAP info section */
+.poap-info {
+  display: flex;
+  flex-direction: column;
+  row-gap: 4px;
+  margin: 0px;
+  padding: 0px;
 }
 
 .poap-title {
   font-family: var(--font-title);
-  font-weight: 600;
-  font-size: 18px;
+  font-weight: 700;
+  font-size: 1.25rem;
   line-height: 1.2;
+  text-align: center;
   color: var(--body-text-color);
-  margin: 0;
+  margin: 12px 0 0 0;
+  padding: 0px;
+  display: block;
+  text-overflow: initial;
+  white-space: pre-wrap;
 }
 
 /* CTA Error message */
