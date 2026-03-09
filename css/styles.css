@@ -319,20 +319,18 @@ html, body {
 .poap-artwork {
   display: flex;
   flex-direction: column;
-  margin: 0px;
+  margin: 0 auto;
   padding: 0px;
   overflow: hidden;
-  width: 100%;
-  height: unset;
-  aspect-ratio: 1 / 1;
+  width: 198px;
+  height: 198px;
   flex: 0 0 auto;
 }
 
 .artwork-image {
   display: block;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: unset;
+  width: 198px;
+  height: 198px;
   object-fit: contain;
   border-radius: 8px;
 }
