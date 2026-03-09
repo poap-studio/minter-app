@@ -20,6 +20,8 @@ window.App = {
   route: null,    // { collection, page, code }
   data: null,     // get_template_setup response
   config: null,   // COLLECTION_CONFIG entry for current collection
+  errorData: null, // Error data for error page
+  bgData: null,   // Background data for fallback
 };
 
 // ===== Route Parsing =====
@@ -33,11 +35,12 @@ function parseRoute() {
 }
 
 // ===== Navigation =====
-// Splash is first-load only. Transitions just swap #app content with a quick fade.
 window.navigateTo = async function (collection, page, code, state) {
   const path = code
     ? `/${collection}/${page}/${code}`
-    : `/${collection}/${page}`;
+    : collection 
+      ? `/${collection}/${page}`
+      : `/${page}`;
   window.history.pushState(state || {}, '', path);
   window.App.route = parseRoute();
 
@@ -109,14 +112,19 @@ function applyFonts(fonts) {
   }
 }
 
-// ===== Route Renderer (async — awaits page renders) =====
+// ===== Route Renderer =====
 async function renderRoute() {
   const { collection, page } = window.App.route;
 
+  if (!collection && page === 'error') {
+    // Global error: /error (no collection theme)
+    renderGlobalError();
+    return;
+  }
+  
   if (!collection) {
-    document.getElementById('app').innerHTML =
-      '<p style="padding:2rem;text-align:center;font-family:sans-serif">Invalid URL</p>';
-    window.hideLoading();
+    // Invalid URL with no collection
+    renderGlobalError();
     return;
   }
 
@@ -129,6 +137,7 @@ async function renderRoute() {
         window.hideLoading();
       }
     } else if (page === 'error') {
+      // Collection error: /{collection}/error (with collection theme)
       if (window.ErrorPage) {
         window.ErrorPage.render();
       } else {
@@ -152,36 +161,61 @@ async function renderRoute() {
   }
 }
 
-// transitionAndRender removed — navigateTo() calls renderRoute() directly
+function renderGlobalError() {
+  document.getElementById('app').innerHTML = `
+    <div style="
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: #f5f5f5; font-family: sans-serif;
+    ">
+      <div style="text-align: center; padding: 2rem;">
+        <h1 style="color: #d32f2f; margin-bottom: 1rem;">Collection not found</h1>
+        <p style="color: #666; margin-bottom: 2rem;">The collection you're looking for doesn't exist.</p>
+        <a href="/" style="color: #1976d2; text-decoration: none;">← Go back</a>
+      </div>
+    </div>
+  `;
+  window.hideLoading();
+}
 
-// ===== Progressive Loading =====
+// ===== Progressive Loading - SIMPLIFIED =====
 async function initSplash(collection, code) {
   const splashEl = document.getElementById('loading-screen');
   const logoEl = document.getElementById('splash-logo');
   const spinnerEl = document.querySelector('.loader-spinner');
   
+  // CASE 1: No collection → render global error page
   if (!collection) {
     renderRoute();
     return;
   }
 
+  // CASE 2: Invalid page name → redirect to collection error
+  const { page } = window.App.route;
+  const validPages = ['mint', 'mycollectible', 'error'];
+  if (page && !validPages.includes(page)) {
+    console.log('[Router] Invalid page, redirecting to collection error');
+    window.navigateTo(collection, 'error');
+    return;
+  }
+
   try {
-    // Step 1: get-bg for fast splash branding + validation
+    // Step 1: Validate collection exists
     console.log('[Router] Loading background...');
-    const bgRes = await fetch(`${SUPABASE_URL}/functions/v1/get-bg?collection=${collection}`);
+    const bgRes = await fetch(`${SUPABASE_URL}/functions/v1/get-bg?collection=${collection}`, {
+      signal: AbortSignal.timeout(10000) // 10s timeout
+    });
     const bgData = await bgRes.json();
     
+    // CASE 3: Collection not found → redirect to global error (/error)
     if (!bgData.exists) {
       console.error('[Router] Collection not found:', collection);
-      window.App.data = { success: false, error: 'Collection not found' };
-      renderRoute();
+      window.navigateTo('', 'error');
       return;
     }
 
-    // Apply background color immediately (splash + CSS variables for error page)
+    // Apply background color immediately
     if (bgData.background_color) {
       splashEl.style.backgroundColor = bgData.background_color;
-      // Also set CSS variable so error page uses correct collection color
       document.documentElement.style.setProperty('--page-bg-color', bgData.background_color);
     }
 
@@ -190,145 +224,89 @@ async function initSplash(collection, code) {
       logoEl.src = bgData.logo_url;
       logoEl.style.display = 'block';
       logoEl.onload = () => logoEl.classList.add('visible');
-      
-      // Store get-bg data globally for error page fallback
       window.App.bgData = bgData;
     }
-
-    // Color the spinner with highlight color (if we have it from bgData)
-    // Note: get-bg doesn't return highlight_color, so we'll wait for template_setup
     
   } catch (err) {
+    // CASE 4: get-bg network/timeout error → redirect to global error
     console.error('[Router] get-bg failed:', err);
-  }
-
-  try {
-    // Step 2: get_template_setup for full theme + content + validation
-    console.log('[Router] Loading template setup...');
-    
-    let setupData;
-    if (code) {
-      // Use BOTH collection and code for validation + template setup
-      const setupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}&code=${code}`);
-      setupData = await setupRes.json();
-      
-      // Backend validation: Check if we have usable data (theme, cms, etc.)
-      if (!setupData.success && (!setupData.theme && !setupData.cms)) {
-        console.error('[Router] Backend validation failed with no usable data:', setupData);
-        // Load collection theme for proper error page branding
-        try {
-          const collectionSetupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}`);
-          const collectionSetupData = await collectionSetupRes.json();
-          if (collectionSetupData.success) {
-            // Apply collection theme for error page
-            applyTheme(collectionSetupData.theme?.raw || {});
-            applyFonts(collectionSetupData.fonts || {});
-            // Store collection setup data + backend error for error page
-            window.App.data = collectionSetupData;
-            window.App.errorData = setupData; // Backend error/message
-          }
-        } catch (err) {
-          console.error('[Router] Failed to load collection theme for error page:', err);
-        }
-        
-        setTimeout(() => {
-          window.navigateTo(collection, 'error');
-        }, 100);
-        return;
-      }
-    } else {
-      // No code - use collection only (for error page or future collection-only routes)
-      const setupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}`);
-      setupData = await setupRes.json();
-    }
-    
-    window.App.data = setupData;
-    console.log('[Router] Template setup:', setupData);
-    
-    // Apply theme only after validation passes
-    if (setupData.success) {
-      applyTheme(setupData.theme?.raw || {});
-      applyFonts(setupData.fonts || {});
-      
-      // Update spinner color with highlight
-      if (setupData.theme?.raw?.highlight_color) {
-        spinnerEl.style.borderTopColor = setupData.theme.raw.highlight_color;
-        spinnerEl.classList.add('branded');
-      }
-    }
-  } catch (err) {
-    console.error('[Router] Template setup failed:', err);
-    window.App.data = { success: false };
-    
-    // Load collection theme for proper error page branding
-    try {
-      const collectionSetupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}`);
-      const collectionSetupData = await collectionSetupRes.json();
-      if (collectionSetupData.success) {
-        // Apply collection theme for error page
-        applyTheme(collectionSetupData.theme?.raw || {});
-        applyFonts(collectionSetupData.fonts || {});
-        // Store collection setup data for error page
-        window.App.data = collectionSetupData;
-      }
-    } catch (fallbackErr) {
-      console.error('[Router] Failed to load collection theme for error page:', fallbackErr);
-    }
-    
-    setTimeout(() => {
-      window.navigateTo(collection, 'error');
-    }, 100);
+    window.navigateTo('', 'error');
     return;
   }
 
-  // Step 3: Render page content behind splash
+  try {
+    // Step 2: Get theme and content
+    console.log('[Router] Loading template setup...');
+    const setupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}&code=${code || ''}`, {
+      signal: AbortSignal.timeout(10000) // 10s timeout
+    });
+    const setupData = await setupRes.json();
+    
+    // CASE 5: get_template_setup error → redirect to collection error with error message
+    if (!setupData.success) {
+      console.error('[Router] Template setup failed:', setupData);
+      // Store error data for error page
+      window.App.errorData = setupData;
+      window.navigateTo(collection, 'error');
+      return;
+    }
+
+    // CASE 6: Success but no complete info → let it continue (as requested by user)
+    // This handles: /[collection] (without page/code) that returns success but incomplete data
+    
+    // SUCCESS: Store data and apply theme
+    window.App.data = setupData;
+    console.log('[Router] Template setup:', setupData);
+    
+    applyTheme(setupData.theme?.raw || {});
+    applyFonts(setupData.fonts || {});
+    
+    // Update spinner color with highlight
+    if (setupData.theme?.raw?.highlight_color) {
+      spinnerEl.style.borderTopColor = setupData.theme.raw.highlight_color;
+      spinnerEl.classList.add('branded');
+    }
+    
+  } catch (err) {
+    // CASE 7: get_template_setup network/timeout error → redirect to collection error
+    console.error('[Router] Template setup network error:', err);
+    window.App.errorData = { error: 'Network error loading content' };
+    window.navigateTo(collection, 'error');
+    return;
+  }
+
+  // SUCCESS: Render page content
   renderRoute();
   
-  // Step 4: Exit animation after a short delay (let content render)
+  // Exit animation after a short delay
   setTimeout(() => {
     exitSplash();
-  }, 600);
+  }, 1000);
 }
 
 function exitSplash() {
   const splashEl = document.getElementById('loading-screen');
-  const logoEl = document.getElementById('splash-logo');
-  
-  // Logo flies straight up to header position (center X, top Y)
-  const targetX = 0;  // Stay centered horizontally 
-  const targetY = -window.innerHeight/2 + 80;  // Move to top
-  
-  // Set CSS custom properties for logo animation
-  logoEl.style.setProperty('--logo-target-x', `${targetX}px`);
-  logoEl.style.setProperty('--logo-target-y', `${targetY}px`);
-  
-  // Start logo fly animation
-  if (logoEl.classList.contains('visible')) {
-    logoEl.classList.add('fly-to-header');
-  }
-  
-  // Hide splash after animation
-  setTimeout(() => {
-    splashEl.classList.add('hide');
-  }, 200);
+  if (!splashEl) return;
+  splashEl.classList.add('hide');
 }
 
 // ===== Init =====
-async function init() {
+document.addEventListener('DOMContentLoaded', () => {
   window.App.route = parseRoute();
-  const { collection, code } = window.App.route;
-  window.App.config = COLLECTION_CONFIG[collection] || {};
 
-  await initSplash(collection, code);
-}
+  // Static config
+  const { collection } = window.App.route;
+  if (collection && COLLECTION_CONFIG[collection]) {
+    window.App.config = COLLECTION_CONFIG[collection];
+  }
 
-// ===== Back/Forward Navigation =====
-window.addEventListener('popstate', async () => {
-  window.App.route = parseRoute();
-  const app = document.getElementById('app');
-  if (app) { app.style.opacity = '0'; await new Promise(r => setTimeout(r, 150)); }
-  await renderRoute();
-  if (app) { app.style.opacity = '1'; }
+  // Kick off first load
+  const { code } = window.App.route;
+  initSplash(collection, code);
 });
 
-window.addEventListener('load', init);
+// Handle browser back/forward
+window.addEventListener('popstate', () => {
+  window.App.route = parseRoute();
+  renderRoute();
+});
