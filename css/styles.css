@@ -134,6 +134,32 @@ html, body {
   opacity: 0.8;
 }
 
+/* Mobile background fix - prevent movement when content expands */
+@media (max-width: 767px) {
+  #screen-landing {
+    background-attachment: scroll;
+    background-position: top center;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  #screen-landing::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--page-bg-image);
+    background-color: var(--page-bg-color);
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    z-index: -1;
+    min-height: 100vh;
+  }
+}
+
 /* Desktop error page improvements */
 @media (min-width: 768px) {
   .error-container {
@@ -187,6 +213,7 @@ html, body {
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   opacity: 0;
   transition: opacity 0.5s ease;
 }
