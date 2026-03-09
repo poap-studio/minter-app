@@ -219,7 +219,7 @@ html, body {
 
 /* POAP Card Container - Premium glassmorphism */
 .poap-card {
-  width: 80vw;
+  width: 75vw;
   max-width: 315px;
   margin: 0 auto 24px;
   position: relative;
@@ -317,7 +317,7 @@ html, body {
   margin: 0 auto;
   padding: 0px;
   overflow: hidden;
-  width: 76%;
+  width: 80%;
   aspect-ratio: 1 / 1;
   flex: 0 0 auto;
 }
