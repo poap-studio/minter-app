@@ -1,22 +1,78 @@
 // ===== My Collectible Page =====
 // Renders: profile card + expanded description + CTA (no form)
-// Very similar to mint page but: no toggle, different description, different button
+// Case 1: Direct entry → get_template_setup + check-mint-code-status  
+// Case 2: Transition from mint → get_template_setup (cached) + claim data (state)
 
 window.MycollectiblePage = {
+
+  // ── Load claim data for direct entry ──
+  async loadClaimData(code) {
+    try {
+      console.log('[MycollectiblePage] Loading claim data for:', code);
+      const res = await fetch(`${window.App.supabaseUrl}/functions/v1/check-mint-code-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qr_hash: code })
+      });
+      const data = await res.json();
+      console.log('[MycollectiblePage] Claim data:', data);
+      
+      if (data.exists && data.claimed) {
+        return {
+          claimed: true,
+          claimed_address: data.claimed_address,
+          claimed_on: data.claimed_on,
+          token_id: data.token_id,
+          collector_order: data.collector_order,
+          total_codes: data.total_codes,
+          qr_hash: data.qr_hash
+        };
+      } else {
+        throw new Error('Token not claimed or does not exist');
+      }
+    } catch (err) {
+      console.error('[MycollectiblePage] Failed to load claim data:', err);
+      return null;
+    }
+  },
 
   // ── Inject HTML into #app ──
   async render() {
     const { collection, code } = window.App.route;
+    
+    // 1. Theme/CMS data already loaded by router
     const cms = window.App.data?.cms || {};
     const cmsDefaults = window.App.data?.cms_defaults || {};
     const setup = window.App.data?.setup || {};
     const raw = window.App.data?.theme?.raw || {};
 
+    // 2. Get claim data (from state or fetch)
+    const navState = window.history.state;
+    let claimData;
+    
+    if (navState?.claimed) {
+      // Case 2: Transition from mint → use state data
+      console.log('[MycollectiblePage] Using claim data from navigation state');
+      claimData = navState;
+    } else {
+      // Case 1: Direct entry → call check-mint-code-status
+      console.log('[MycollectiblePage] Direct entry, fetching claim data');
+      claimData = await this.loadClaimData(code);
+    }
+    
+    if (!claimData) {
+      // Error state - redirect to mint page
+      console.error('[MycollectiblePage] No claim data available, redirecting to mint');
+      window.navigateTo(collection, 'mint', code);
+      return;
+    }
+
+    // 3. Prepare display data
     const headerLogoSrc  = raw.header_logo_url;
     const footerLogoSrc  = raw.footer_logo_url;
     const artworkSrc     = cms.main_image_url;
     const detailsTitle   = cms.title;
-    const detailsText    = cms.collected_description; // Different from mint page
+    const detailsText    = cms.collected_description;
     
     // Button texts and URLs
     const buttonText = cmsDefaults.mycollectible_button_text || 'View Collectible';
@@ -25,6 +81,14 @@ window.MycollectiblePage = {
     // Legal URLs with fallbacks
     const termsUrl = setup.terms_url || '#';
     const privacyUrl = setup.privacy_url || '#';
+    
+    // Format claim data for display
+    const collectorInfo = claimData.collector_order && claimData.total_codes 
+      ? `# ${claimData.collector_order}/${claimData.total_codes} Collectors`
+      : null;
+    const tokenId = claimData.token_id ? `ID ${claimData.token_id}` : null;
+    const collectedDate = this.formatDate(claimData.claimed_on);
+    const ownerAddress = claimData.claimed_address ? claimData.claimed_address.toUpperCase() : null;
 
     const appEl = document.getElementById('app');
     if (!appEl) { console.error('[MycollectiblePage] #app not found'); window.hideLoading(); return; }
@@ -46,10 +110,33 @@ window.MycollectiblePage = {
                   <div class="card-badge">
                     <img src="${raw.card_logo_url || headerLogoSrc}" alt="Badge" class="card-badge-img">
                   </div>
+                  ${collectorInfo ? `<div class="card-collector-info">${collectorInfo}</div>` : ''}
+                  ${tokenId ? `<div class="card-token-id">${tokenId}</div>` : ''}
                 </div>
 
                 <div class="card-artwork">
                   <img src="${artworkSrc}" alt="POAP Artwork" class="poap-artwork">
+                </div>
+                
+                <!-- Claim Info Extension -->
+                <div class="card-claim-info">
+                  ${collectedDate ? `
+                    <div class="claim-date">
+                      <svg class="claim-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      Collected on ${collectedDate}
+                    </div>
+                  ` : ''}
+                  ${ownerAddress ? `
+                    <div class="claim-owner">
+                      <span class="owner-label">OWNED BY</span>
+                      <span class="owner-address">${ownerAddress}</span>
+                    </div>
+                  ` : ''}
                 </div>
               </div>
             </div>
