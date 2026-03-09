@@ -208,12 +208,11 @@ window.MintPage = {
     const raw = window.App.data?.theme?.raw || {};
     const mintId = this.resolveMintIdentifier(code);
 
-    const PROFILE_PHOTO = 'https://xkfwlcyntfcfouvgmdvj.supabase.co/storage/v1/object/public/experience-assets/poap-artwork/7dce8f163f576033cd745748a5358eb52d582b8b.png';
-    const headerLogoSrc  = raw.header_logo_url || 'https://xkfwlcyntfcfouvgmdvj.supabase.co/storage/v1/object/public/experience-assets/header-logos/Isolation_Mode.svg';
-    const footerLogoSrc  = raw.footer_logo_url || 'https://xkfwlcyntfcfouvgmdvj.supabase.co/storage/v1/object/public/experience-assets/footer-logos/POAP%20STUDIO.svg';
-    const artworkSrc     = cms.main_image_url  || 'https://xkfwlcyntfcfouvgmdvj.supabase.co/storage/v1/object/public/experience-assets/poap-artwork/0b0024850d800025dcdf05cfd2516f230321a88f.png';
-    const detailsTitle   = cms.title           || 'Let\'s stay in touch!';
-    const detailsText    = cms.available_description || 'Get my digital business card with my email, LinkedIn, Telegram and calendar.';
+    const headerLogoSrc  = raw.header_logo_url;
+    const footerLogoSrc  = raw.footer_logo_url;
+    const artworkSrc     = cms.main_image_url;
+    const detailsTitle   = cms.title;
+    const detailsText    = cms.available_description;
 
     const appEl = document.getElementById('app');
     if (!appEl) { console.error('[MintPage] #app not found'); window.hideLoading(); return; }

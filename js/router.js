@@ -1,9 +1,8 @@
-// ===== BPI Digital Card — SPA Router =====
+// ===== Collectible Minter App — SPA Router =====
 // URL format: /[collection]/[page]/[code]
 // Examples:
-//   /bpi-networking/mint/nc0eui
-//   /bpi-networking/mycollectible/nc0eui
-//   /bpi-networking/mint  (slug from query param fallback)
+//   /collection-name/mint/code123
+//   /collection-name/mycollectible/code123
 
 const SUPABASE_URL = 'https://xkfwlcyntfcfouvgmdvj.supabase.co';
 

@@ -11,11 +11,11 @@ window.ErrorPage = {
     const errorData = window.App.errorData || {};
     
     // Get branding from template setup (now loaded with collection data), fallback to get-bg data
-    const logoSrc = raw.header_logo_url || bgData.logo_url || 'https://xkfwlcyntfcfouvgmdvj.supabase.co/storage/v1/object/public/experience-assets/header-logos/Isolation_Mode.svg';
+    const logoSrc = raw.header_logo_url || bgData.logo_url;
     
-    // Use backend error/message if available, fallback to generic
+    // Use backend error/message if available
     const errorTitle = errorData.error || 'Error';
-    const errorMessage = errorData.message || 'This collectible doesn\'t belong to this experience or wasn\'t found in our database.';
+    const errorMessage = errorData.message || '[ERROR MESSAGE NOT CONFIGURED]';
     
     console.log('[ErrorPage] Using logo:', logoSrc);
     console.log('[ErrorPage] Backend error:', errorData);
