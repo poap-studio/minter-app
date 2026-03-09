@@ -118,13 +118,15 @@ async function renderRoute() {
 
   if (!collection && page === 'error') {
     // Global error: /error (no collection theme)
-    renderGlobalError();
+    console.log('[Router] Rendering global error page - no collection');
+    window.SimpleErrorPage.render();
     return;
   }
   
   if (!collection) {
     // Invalid URL with no collection
-    renderGlobalError();
+    console.log('[Router] Rendering global error page - invalid URL');
+    window.SimpleErrorPage.render();
     return;
   }
 
@@ -253,10 +255,10 @@ async function initSplash(collection, code) {
     });
     const bgData = await bgRes.json();
     
-    // CASE 3: Collection not found → redirect to global error (/error)
+    // CASE 3: Collection not found → render simple error page immediately
     if (!bgData.exists) {
       console.error('[Router] Collection not found:', collection);
-      window.navigateTo('', 'error');
+      window.SimpleErrorPage.render();
       return;
     }
 
@@ -275,9 +277,9 @@ async function initSplash(collection, code) {
     }
     
   } catch (err) {
-    // CASE 4: get-bg network/timeout error → redirect to global error
+    // CASE 4: get-bg network/timeout error → render simple error page immediately
     console.error('[Router] get-bg failed:', err);
-    window.navigateTo('', 'error');
+    window.SimpleErrorPage.render();
     return;
   }
 
