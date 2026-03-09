@@ -135,6 +135,7 @@ html, body {
 }
 
 /* Mobile background fix - prevent movement when content expands */
+/* TEMP DISABLED FOR DEBUG
 @media (max-width: 767px) {
   #screen-landing {
     background-attachment: scroll;
@@ -159,6 +160,7 @@ html, body {
     min-height: 100vh;
   }
 }
+*/
 
 /* Desktop error page improvements */
 @media (min-width: 768px) {
