@@ -551,7 +551,7 @@ html, body {
   font-size: 12px;
   color: var(--body-text-color);
   opacity: 0.8;
-  margin: 6px 0 1px 0;
+  margin: 6px 0 0 0;
 }
 
 .collected-icon {
@@ -568,7 +568,7 @@ html, body {
   height: 1px;
   background: var(--body-text-color);
   opacity: 0.15;
-  margin: 1px 0;
+  margin: 0;
 }
 
 /* Owner section - left indented, 2 lines */
@@ -589,7 +589,7 @@ html, body {
 
 .owner-section .owner-address {
   font-family: var(--font-title);
-  font-size: 14px;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--body-text-color);
   word-break: break-all;
