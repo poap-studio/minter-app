@@ -110,34 +110,46 @@ window.MycollectiblePage = {
                   <div class="card-badge">
                     <img src="${raw.card_logo_url || headerLogoSrc}" alt="Badge" class="card-badge-img">
                   </div>
-                  ${collectorInfo ? `<div class="card-collector-info">${collectorInfo}</div>` : ''}
-                  ${tokenId ? `<div class="card-token-id">${tokenId}</div>` : ''}
+                  <!-- Collector/Token info - right side, no background -->
+                  <div class="card-meta-info">
+                    ${collectorInfo ? `<div class="collector-number">${collectorInfo}</div>` : ''}
+                    ${tokenId ? `<div class="token-id">${tokenId}</div>` : ''}
+                  </div>
                 </div>
 
-                <div class="card-artwork">
-                  <img src="${artworkSrc}" alt="POAP Artwork" class="poap-artwork">
+                <!-- Artwork with rounded corners like mint page -->
+                <div class="poap-artwork">
+                  <img src="${artworkSrc}" alt="POAP Artwork" class="artwork-image">
                 </div>
                 
-                <!-- Claim Info Extension -->
-                <div class="card-claim-info">
-                  ${collectedDate ? `
-                    <div class="claim-date">
-                      <svg class="claim-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                      </svg>
-                      Collected on ${collectedDate}
-                    </div>
-                  ` : ''}
-                  ${ownerAddress ? `
-                    <div class="claim-owner">
-                      <span class="owner-label">OWNED BY</span>
-                      <span class="owner-address">${ownerAddress}</span>
-                    </div>
-                  ` : ''}
+                <!-- Title like mint page -->
+                <div class="poap-info">
+                  <h2 class="poap-title">${detailsTitle}</h2>
                 </div>
+                
+                <!-- Collected date below title -->
+                ${collectedDate ? `
+                  <div class="collected-info">
+                    <svg class="collected-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Collected on ${collectedDate}
+                  </div>
+                ` : ''}
+                
+                <!-- Divider full width of inner card -->
+                <div class="claim-divider"></div>
+                
+                <!-- Owner info - left indented, 2 lines -->
+                ${ownerAddress ? `
+                  <div class="owner-section">
+                    <div class="owner-label">OWNED BY:</div>
+                    <div class="owner-address">${ownerAddress}</div>
+                  </div>
+                ` : ''}
               </div>
             </div>
           </div>
