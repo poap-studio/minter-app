@@ -467,7 +467,7 @@ html, body {
 
 /* Date and Location Meta Section */
 .details-meta {
-  margin: 16px 0 20px 0;
+  margin: 12px 0 16px 0;
 }
 .details-meta.center-single {
   display: flex;
@@ -475,10 +475,9 @@ html, body {
 }
 .details-meta:not(.center-single) {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 32px;
 }
 .meta-item {
   display: flex;
@@ -503,7 +502,7 @@ html, body {
   height: 1px;
   background: var(--body-text-color);
   opacity: 0.15;
-  margin: 16px 0 0 0;
+  margin: 8px 0 0 0;
 }
 
 /* Footer — uses footer text color */

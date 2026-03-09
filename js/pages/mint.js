@@ -201,6 +201,26 @@ window.MintPage = {
     };
   },
 
+  // ── Format date to DD mm. YY format ──
+  formatDate(dateString) {
+    if (!dateString) return null;
+    
+    try {
+      const date = new Date(dateString);
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = monthNames[date.getMonth()];
+      const year = String(date.getFullYear()).slice(-2);
+      
+      return `${day} ${month}. ${year}`;
+    } catch (err) {
+      console.warn('[MintPage] Invalid date format:', dateString);
+      return dateString; // Return original if parsing fails
+    }
+  },
+
   // ── Render date and location section ──
   renderDateLocationSection(cms) {
     const date = cms?.date;
@@ -211,8 +231,9 @@ window.MintPage = {
       return '';
     }
     
-    // Si solo uno existe, centrarlo; si ambos existen, lado a lado
-    const hasDate = date && date.trim();
+    // Format date and check if we have valid data
+    const formattedDate = this.formatDate(date);
+    const hasDate = formattedDate && formattedDate.trim();
     const hasLocation = location && location.trim();
     const centerClass = (hasDate && hasLocation) ? '' : 'center-single';
     
@@ -226,7 +247,7 @@ window.MintPage = {
               <line x1="8" y1="2" x2="8" y2="6"/>
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            <span class="meta-text">${hasDate}</span>
+            <span class="meta-text">${formattedDate}</span>
           </div>
         ` : ''}
         ${hasLocation ? `
