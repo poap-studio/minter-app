@@ -204,18 +204,18 @@ async function initSplash(collection, code) {
   }
 
   try {
-    // Step 2: get_template_setup for full theme + content
+    // Step 2: get_template_setup for full theme + content + validation
     console.log('[Router] Loading template setup...');
     
     let setupData;
     if (code) {
-      // Use code for template setup (gets specific drop + content)
-      const setupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?code=${code}`);
+      // Use BOTH collection and code for validation + template setup
+      const setupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}&code=${code}`);
       setupData = await setupRes.json();
       
-      // Validation: Check if code response is valid
+      // Backend validation: Check response
       if (!setupData.success) {
-        console.error('[Router] Invalid code:', code);
+        console.error('[Router] Backend validation failed:', setupData);
         // Load collection theme for proper error page branding
         try {
           const collectionSetupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}`);
@@ -224,35 +224,9 @@ async function initSplash(collection, code) {
             // Apply collection theme for error page
             applyTheme(collectionSetupData.theme?.raw || {});
             applyFonts(collectionSetupData.fonts || {});
-            // Store collection setup data for error page
+            // Store collection setup data + backend error for error page
             window.App.data = collectionSetupData;
-          }
-        } catch (err) {
-          console.error('[Router] Failed to load collection theme for error page:', err);
-        }
-        
-        setTimeout(() => {
-          window.navigateTo(collection, 'error');
-        }, 100);
-        return;
-      }
-      
-      // Validation: Check if code belongs to expected collection
-      const expectedCollection = collection;
-      const actualCollection = setupData.collection?.slug;
-      
-      if (expectedCollection !== actualCollection) {
-        console.warn('[Router] Collection mismatch:', expectedCollection, '!=', actualCollection);
-        // Load collection theme for proper error page branding
-        try {
-          const collectionSetupRes = await fetch(`${SUPABASE_URL}/functions/v1/get_template_setup?collection=${collection}`);
-          const collectionSetupData = await collectionSetupRes.json();
-          if (collectionSetupData.success) {
-            // Apply collection theme for error page
-            applyTheme(collectionSetupData.theme?.raw || {});
-            applyFonts(collectionSetupData.fonts || {});
-            // Store collection setup data for error page
-            window.App.data = collectionSetupData;
+            window.App.errorData = setupData; // Backend error/message
           }
         } catch (err) {
           console.error('[Router] Failed to load collection theme for error page:', err);
