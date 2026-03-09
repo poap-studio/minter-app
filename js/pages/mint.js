@@ -269,6 +269,7 @@ window.MintPage = {
     const { collection, code } = window.App.route;
     const cms = window.App.data?.cms || {};
     const cmsDefaults = window.App.data?.cms_defaults || {};
+    const setup = window.App.data?.setup || {};
     const raw = window.App.data?.theme?.raw || {};
     const mintId = this.resolveMintIdentifier(code);
 
@@ -281,6 +282,10 @@ window.MintPage = {
     // Button texts with fallbacks - store on object for access in init()
     this.mintPageButtonText = cmsDefaults.mintpage_button_text || 'Get Collectible';
     this.mintFormButtonText = cmsDefaults.mintform_button_text || 'Mint';
+    
+    // Legal URLs with fallbacks
+    const termsUrl = setup.terms_url || '#';
+    const privacyUrl = setup.privacy_url || '#';
 
     const appEl = document.getElementById('app');
     if (!appEl) { console.error('[MintPage] #app not found'); window.hideLoading(); return; }
@@ -348,9 +353,9 @@ window.MintPage = {
               </div>
             </div>
             <div class="footer-links">
-              <a href="#" class="footer-link">Terms &amp; Conditions</a>
+              <a href="${termsUrl}" class="footer-link" target="_blank">Terms &amp; Conditions</a>
               <span class="footer-sep">|</span>
-              <a href="#" class="footer-link">Privacy Policy</a>
+              <a href="${privacyUrl}" class="footer-link" target="_blank">Privacy Policy</a>
             </div>
           </footer>
         </div>
@@ -367,7 +372,7 @@ window.MintPage = {
             ${this.renderCustomFields()}
 
             <p class="form-terms">By clicking on the button below you agree with our
-              <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a>
+              <a href="${termsUrl}" target="_blank">Terms &amp; Conditions</a> and <a href="${privacyUrl}" target="_blank">Privacy Policy</a>
             </p>
             <p class="form-error" style="display:none; font-size:13px; margin-bottom:12px; text-align:center;"></p>
             <button type="submit" class="cta-button cta-form">
