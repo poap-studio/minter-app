@@ -80,6 +80,35 @@ window.MintPage = {
     }
   },
 
+  // ── Render main address field with conditional label ──
+  renderMainAddressField() {
+    const mintingType = window.App.data?.setup?.minting_type || 'all';
+    let label, inputType, placeholder;
+    
+    switch (mintingType) {
+      case 'mail':
+        label = 'Enter your email:';
+        inputType = 'email';
+        placeholder = 'your@email.com';
+        break;
+      case 'wallet':
+        label = 'Enter your wallet address or ENS:';
+        inputType = 'text';
+        placeholder = 'Wallet / ENS';
+        break;
+      default: // 'all'
+        label = 'Enter your wallet address, ENS or email:';
+        inputType = 'text';
+        placeholder = 'Wallet / ENS / Email';
+    }
+    
+    return `
+      <label class="form-label" for="wallet_or_email">${label} <span style="color:var(--btn-bg-color)">*</span></label>
+      <input type="${inputType}" id="wallet_or_email" name="wallet_or_email" class="form-input" 
+        placeholder="${placeholder}" required>
+    `;
+  },
+
   // ── Render all custom fields for the minting form ──
   renderCustomFields() {
     const fields = (window.App.data?.customFields || [])
@@ -171,11 +200,10 @@ window.MintPage = {
       <!-- FORM BOTTOM SHEET -->
       <div id="form-overlay" class="overlay" style="display:none;">
         <div id="form-sheet" class="bottom-sheet">
-          <h2 class="form-title">Get my Digital Card</h2>
-          <p class="form-subtitle">Tell me a bit about yourself so<br>I can follow up with you.</p>
+          <h2 class="form-title" style="font-family:var(--font-title)">Get your collectible</h2>
+          <p class="form-subtitle" style="font-family:var(--font-body)">To secure your collectible we need a few details</p>
           <form id="claim-form" autocomplete="off">
-            <label class="form-label" for="email">Email <span style="color:var(--btn-bg-color)">*</span></label>
-            <input type="email" id="email" name="email" class="form-input" placeholder="your@email.com" required>
+            ${this.renderMainAddressField()}
 
             ${this.renderCustomFields()}
 
@@ -184,7 +212,7 @@ window.MintPage = {
             </p>
             <p class="form-error" style="display:none; font-size:13px; margin-bottom:12px; text-align:center;"></p>
             <button type="submit" class="cta-button cta-form">
-              <span class="cta-text">Get my Card</span>
+              <span class="cta-text">Collect</span>
               <span class="cta-spinner" style="display:none;"></span>
             </button>
           </form>
@@ -230,7 +258,7 @@ window.MintPage = {
     function showCtaError(msg) {
       window.hideLoading(); // stay on mint, reveal page with error
       ctaGetCard.disabled = true;
-      ctaText.textContent = 'Get my Digital Card';
+      ctaText.textContent = 'Get Collectible';
       ctaSpinner.style.display = 'none';
       ctaGetCard.style.opacity = '0.4';
       ctaError.textContent = msg;
@@ -275,10 +303,10 @@ window.MintPage = {
       const btnText   = btn.querySelector('.cta-text');
       const btnSpinner = btn.querySelector('.cta-spinner');
       const formError = claimForm.querySelector('.form-error');
-      const email = claimForm.querySelector('input[name="email"]')?.value.trim() || '';
+      const walletOrEmail = claimForm.querySelector('input[name="wallet_or_email"]')?.value.trim() || '';
 
-      if (!email) {
-        if (formError) { formError.textContent = 'Please enter your email'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
+      if (!walletOrEmail) {
+        if (formError) { formError.textContent = 'Please enter your wallet address, ENS or email'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
         return;
       }
       if (!mintId.value) {
@@ -288,7 +316,7 @@ window.MintPage = {
 
       if (formError) { formError.textContent = ''; formError.style.display = 'none'; }
       btn.disabled = true;
-      btnText.textContent = 'Creating your card...';
+      btnText.textContent = 'Collecting...';
       btnSpinner.style.display = 'inline-block';
 
       try {
@@ -296,10 +324,10 @@ window.MintPage = {
         let claimUrl, claimBody;
         if (mintId.type === 'mintcode') {
           claimUrl = `${SUPABASE_URL}/functions/v1/claim-mint-code`;
-          claimBody = { address: email, qr_hash: mintId.value, collection_drop_id: COLLECTION_DROP_ID };
+          claimBody = { address: walletOrEmail, qr_hash: mintId.value, collection_drop_id: COLLECTION_DROP_ID };
         } else if (mintId.type === 'slug') {
           claimUrl = `${SUPABASE_URL}/functions/v1/claim-from-slug`;
-          claimBody = { address: email, slug: mintId.value, collection_drop_id: COLLECTION_DROP_ID };
+          claimBody = { address: walletOrEmail, slug: mintId.value, collection_drop_id: COLLECTION_DROP_ID };
         }
 
         const res  = await fetch(claimUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(claimBody) });
@@ -324,7 +352,7 @@ window.MintPage = {
 
             if (Object.keys(customFieldResponses).length > 0) {
               const cfSaveBody = {
-                wallet_or_email: email,
+                wallet_or_email: walletOrEmail,
                 collection_id: window.App.data?.ids?.collection_id || '1d4bca0e-fbbc-4af2-8a12-cced5d028c67',
                 drop_id: data.drop_id,
                 responses: customFieldResponses
@@ -355,7 +383,7 @@ window.MintPage = {
           const claimedCode = data.code || mintId.value;
           const claimState = {
             claimed: true,
-            claimed_address: email,
+            claimed_address: walletOrEmail,
             claimed_on: data.claimed_on || new Date().toISOString(),
           };
           setTimeout(() => {
@@ -376,7 +404,7 @@ window.MintPage = {
         console.error('[Mint] Claim failed:', err);
         if (formError) { formError.textContent = 'Network error. Please check your connection.'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
       } finally {
-        btnText.textContent = 'Get my Card';
+        btnText.textContent = 'Collect';
         btnSpinner.style.display = 'none';
         btn.disabled = false;
       }
@@ -437,7 +465,7 @@ window.MintPage = {
         if (avail.success && avail.availability?.can_claim) {
           window.hideLoading(); // stay on mint, CTA ready
           ctaGetCard.disabled = false;
-          ctaText.textContent = 'Get my Digital Card';
+          ctaText.textContent = 'Get Collectible';
           ctaSpinner.style.display = 'none';
           ctaGetCard.style.opacity = '1';
           return;
@@ -451,7 +479,7 @@ window.MintPage = {
         console.error('[Mint] Availability check failed:', err);
         window.hideLoading();
         ctaGetCard.disabled = false;
-        ctaText.textContent = 'Get my Digital Card';
+        ctaText.textContent = 'Get Collectible';
         ctaSpinner.style.display = 'none';
         ctaGetCard.style.opacity = '1';
       }
@@ -468,7 +496,7 @@ window.MintPage = {
         if (avail.success && avail.availability?.can_claim) {
           window.hideLoading(); // stay on mint, CTA ready
           ctaGetCard.disabled = false;
-          ctaText.textContent = 'Get my Digital Card';
+          ctaText.textContent = 'Get Collectible';
           ctaSpinner.style.display = 'none';
           ctaGetCard.style.opacity = '1';
           return;
@@ -484,7 +512,7 @@ window.MintPage = {
         console.error('[Mint] Availability check failed (slug):', err);
         window.hideLoading();
         ctaGetCard.disabled = false;
-        ctaText.textContent = 'Get my Digital Card';
+        ctaText.textContent = 'Get Collectible';
         ctaSpinner.style.display = 'none';
         ctaGetCard.style.opacity = '1';
       }
