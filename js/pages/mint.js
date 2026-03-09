@@ -268,6 +268,7 @@ window.MintPage = {
   render() {
     const { collection, code } = window.App.route;
     const cms = window.App.data?.cms || {};
+    const cmsDefaults = window.App.data?.cms_defaults || {};
     const raw = window.App.data?.theme?.raw || {};
     const mintId = this.resolveMintIdentifier(code);
 
@@ -278,8 +279,8 @@ window.MintPage = {
     const detailsText    = cms.available_description;
     
     // Button texts with fallbacks - store on object for access in init()
-    this.mintPageButtonText = cms.mintpage_button_text || 'Get Collectible';
-    this.mintFormButtonText = cms.mintform_button_text || 'Mint';
+    this.mintPageButtonText = cmsDefaults.mintpage_button_text || 'Get Collectible';
+    this.mintFormButtonText = cmsDefaults.mintform_button_text || 'Mint';
 
     const appEl = document.getElementById('app');
     if (!appEl) { console.error('[MintPage] #app not found'); window.hideLoading(); return; }
