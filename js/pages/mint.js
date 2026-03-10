@@ -254,7 +254,7 @@ window.MintPage = {
     // Only validate if accepted_values is defined AND not empty array
     if (acceptedValues && Array.isArray(acceptedValues) && acceptedValues.length > 0) {
       if (!acceptedValues.includes(value)) {
-        return field.input_error_message || 'Valor no permitido';
+        return field.input_error_message || 'Value not allowed';
       }
     }
     return null;
@@ -273,7 +273,7 @@ window.MintPage = {
     if (rules.pattern && typeof rules.pattern === 'string' && rules.pattern.trim() !== '') {
       try {
         if (!new RegExp(rules.pattern).test(value)) {
-          return field.input_error_message || 'Formato inválido';
+          return field.input_error_message || 'Invalid format';
         }
       } catch (err) {
         console.warn('[Validation] Invalid regex pattern:', rules.pattern);
@@ -284,13 +284,13 @@ window.MintPage = {
     // Length validation - only if valid numbers > 0
     if (typeof rules.min_length === 'number' && rules.min_length > 0) {
       if (value.length < rules.min_length) {
-        return field.input_error_message || `Mínimo ${rules.min_length} caracteres`;
+        return field.input_error_message || `Minimum ${rules.min_length} characters`;
       }
     }
     
     if (typeof rules.max_length === 'number' && rules.max_length > 0) {
       if (value.length > rules.max_length) {
-        return field.input_error_message || `Máximo ${rules.max_length} caracteres`;
+        return field.input_error_message || `Maximum ${rules.max_length} characters`;
       }
     }
     
@@ -303,14 +303,14 @@ window.MintPage = {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      return field.input_error_message || 'Por favor ingrese un email válido';
+      return field.input_error_message || 'Please enter a valid email';
     }
     
     // Apply length rules if any
     const rules = field.validation_rules;
     if (rules && typeof rules.max_length === 'number' && rules.max_length > 0) {
       if (value.length > rules.max_length) {
-        return field.input_error_message || `Máximo ${rules.max_length} caracteres`;
+        return field.input_error_message || `Maximum ${rules.max_length} characters`;
       }
     }
     
@@ -322,7 +322,7 @@ window.MintPage = {
     // Basic phone validation (digits, spaces, +, -, (, ))
     const phoneRegex = /^[\d\s\+\-\(\)]+$/;
     if (!phoneRegex.test(value)) {
-      return field.input_error_message || 'Por favor ingrese un teléfono válido';
+      return field.input_error_message || 'Please enter a valid phone number';
     }
     
     return this.validateAcceptedValues(field, value);
@@ -333,7 +333,7 @@ window.MintPage = {
     // Check if value is in options
     const options = field.options || [];
     if (options.length > 0 && !options.includes(value)) {
-      return field.input_error_message || 'Por favor seleccione una opción válida';
+      return field.input_error_message || 'Please select a valid option';
     }
     
     return this.validateAcceptedValues(field, value);
@@ -346,7 +346,7 @@ window.MintPage = {
     // Validate each selected value is in options
     for (const value of values) {
       if (options.length > 0 && !options.includes(value)) {
-        return field.input_error_message || 'Una o más opciones seleccionadas no son válidas';
+        return field.input_error_message || 'One or more selected options are invalid';
       }
     }
     
@@ -359,7 +359,7 @@ window.MintPage = {
     
     if (rules && typeof rules.max_length === 'number' && rules.max_length > 0) {
       if (value.length > rules.max_length) {
-        return field.input_error_message || `Máximo ${rules.max_length} caracteres`;
+        return field.input_error_message || `Maximum ${rules.max_length} characters`;
       }
     }
     
@@ -372,7 +372,7 @@ window.MintPage = {
     
     // Required validation first
     if (is_required && (!value || String(value).trim() === '')) {
-      return field.input_error_message || `${field.label} es requerido`;
+      return field.input_error_message || `${field.label} is required`;
     }
     
     // If no value AND not required, no format validation needed
@@ -905,7 +905,6 @@ window.MintPage = {
 
       // Validate all custom fields
       if (!this.validateAllCustomFields()) {
-        if (formError) { formError.textContent = 'Por favor corrige los errores en el formulario'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
         return;
       }
 
