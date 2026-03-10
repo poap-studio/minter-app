@@ -21,6 +21,7 @@ window.MintPage = {
     const name      = field.field_name;      // field_name, not name
     const required  = field.is_required;
     const options   = field.options || [];   // edge already applies override_options
+    const placeholder = field.placeholder || field.label; // Use new placeholder field with fallback
     const reqAttr   = required ? 'required' : '';
     const reqMark   = required ? ' <span style="color:var(--btn-bg-color)">*</span>' : '';
     const walletClass = field.for_wallet ? 'cf-for-wallet' : '';
@@ -36,7 +37,8 @@ window.MintPage = {
             <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
             <input type="${field.field_type === 'phone' ? 'tel' : field.field_type}"
               id="cf_${name}" name="cf_${name}" class="form-input"
-              placeholder="${label}" ${reqAttr}>
+              placeholder="${placeholder}" ${reqAttr} data-field-type="${field.field_type}">
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
           </div>`;
 
       case 'textarea':
@@ -44,31 +46,49 @@ window.MintPage = {
           <div ${wrapperClass}>
             <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
             <textarea id="cf_${name}" name="cf_${name}" class="form-input"
-              placeholder="${label}" rows="3" ${reqAttr}></textarea>
+              placeholder="${placeholder}" rows="3" ${reqAttr} data-field-type="${field.field_type}"></textarea>
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
           </div>`;
 
       case 'select':
+        const selectPlaceholder = placeholder || label;
         return `
           <div ${wrapperClass}>
             <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
             <div class="select-wrapper">
-              <select id="cf_${name}" name="cf_${name}" class="form-select" ${reqAttr}>
-                <option value="" disabled selected>${label}</option>
+              <select id="cf_${name}" name="cf_${name}" class="form-select" ${reqAttr} data-field-type="${field.field_type}">
+                <option value="" disabled selected>${selectPlaceholder}</option>
                 ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
               </select>
               <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
+          </div>`;
+
+      case 'multiselect':
+        return `
+          <div ${wrapperClass}>
+            <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
+            <div class="multiselect-wrapper">
+              ${options.map((o, i) => `
+                <div class="form-checkbox-row">
+                  <input type="checkbox" id="cf_${name}_${i}" name="cf_${name}" value="${o}" class="form-checkbox" data-field-type="${field.field_type}">
+                  <label class="form-checkbox-label" for="cf_${name}_${i}">${o}</label>
+                </div>`).join('')}
+            </div>
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
           </div>`;
 
       case 'checkbox':
         return `
           <div ${wrapperClass}>
             <div class="form-checkbox-row">
-              <input type="checkbox" id="cf_${name}" name="cf_${name}" class="form-checkbox" ${reqAttr}>
+              <input type="checkbox" id="cf_${name}" name="cf_${name}" class="form-checkbox" ${reqAttr} data-field-type="${field.field_type}">
               <label class="form-checkbox-label" for="cf_${name}">${label}${reqMark}</label>
             </div>
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
           </div>`;
 
       case 'radio':
@@ -78,10 +98,11 @@ window.MintPage = {
               <legend class="form-label">${label}${reqMark}</legend>
               ${options.map((o, i) => `
                 <div class="form-radio-row">
-                  <input type="radio" id="cf_${name}_${i}" name="cf_${name}" value="${o}" ${reqAttr}>
+                  <input type="radio" id="cf_${name}_${i}" name="cf_${name}" value="${o}" ${reqAttr} data-field-type="${field.field_type}">
                   <label for="cf_${name}_${i}">${o}</label>
                 </div>`).join('')}
             </fieldset>
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
           </div>`;
 
       default:
@@ -89,7 +110,8 @@ window.MintPage = {
           <div ${wrapperClass}>
             <label class="form-label" for="cf_${name}">${label}${reqMark}</label>
             <input type="text" id="cf_${name}" name="cf_${name}" class="form-input"
-              placeholder="${label}" ${reqAttr}>
+              placeholder="${placeholder}" ${reqAttr} data-field-type="text">
+            <div class="field-error" id="error_cf_${name}" style="display:none;"></div>
           </div>`;
     }
   },
@@ -171,20 +193,41 @@ window.MintPage = {
     }
   },
 
-  // ── Toggle wallet fields visibility ──
+  // ── Toggle wallet fields visibility and required state ──
   toggleWalletFields(isWalletType) {
     const walletFields = document.querySelectorAll('.cf-for-wallet');
     walletFields.forEach(field => {
+      const input = field.querySelector('input, select, textarea');
+      
       if (isWalletType) {
+        // Show field
         field.style.display = 'block';
         setTimeout(() => {
           field.classList.add('visible');
         }, 10); // Small delay for smooth transition
+        
+        // Restore required attribute if field was originally required
+        if (input && input.dataset.originalRequired === 'true') {
+          input.setAttribute('required', '');
+        }
       } else {
+        // Hide field
         field.classList.remove('visible');
         setTimeout(() => {
           field.style.display = 'none';
         }, 300);
+        
+        // Remove required attribute to prevent form validation blocking
+        if (input) {
+          // Store original required state
+          if (input.hasAttribute('required')) {
+            input.dataset.originalRequired = 'true';
+          }
+          input.removeAttribute('required');
+          
+          // Clear any validation errors when hiding
+          this.clearFieldError(field);
+        }
       }
     });
   },
@@ -200,6 +243,245 @@ window.MintPage = {
       clearTimeout(timeout);
       timeout = setTimeout(later, wait);
     };
+  },
+
+  // ── Custom Field Validation System ──
+  
+  // Validate accepted values (quiz mode)
+  validateAcceptedValues(field, value) {
+    const acceptedValues = field.validation_rules?.accepted_values;
+    
+    // Only validate if accepted_values is defined AND not empty array
+    if (acceptedValues && Array.isArray(acceptedValues) && acceptedValues.length > 0) {
+      if (!acceptedValues.includes(value)) {
+        return field.input_error_message || 'Valor no permitido';
+      }
+    }
+    return null;
+  },
+
+  // Validate text fields with pattern, length, and accepted values
+  validateTextField(field, value) {
+    const rules = field.validation_rules;
+    
+    // Validate that rules exists and is not null/undefined
+    if (!rules || typeof rules !== 'object') {
+      return null; // No rules = no errors
+    }
+    
+    // Pattern validation - only if pattern has content
+    if (rules.pattern && typeof rules.pattern === 'string' && rules.pattern.trim() !== '') {
+      try {
+        if (!new RegExp(rules.pattern).test(value)) {
+          return field.input_error_message || 'Formato inválido';
+        }
+      } catch (err) {
+        console.warn('[Validation] Invalid regex pattern:', rules.pattern);
+        // Invalid regex = skip validation
+      }
+    }
+    
+    // Length validation - only if valid numbers > 0
+    if (typeof rules.min_length === 'number' && rules.min_length > 0) {
+      if (value.length < rules.min_length) {
+        return field.input_error_message || `Mínimo ${rules.min_length} caracteres`;
+      }
+    }
+    
+    if (typeof rules.max_length === 'number' && rules.max_length > 0) {
+      if (value.length > rules.max_length) {
+        return field.input_error_message || `Máximo ${rules.max_length} caracteres`;
+      }
+    }
+    
+    // Quiz/accepted values validation
+    return this.validateAcceptedValues(field, value);
+  },
+
+  // Validate email fields
+  validateEmailField(field, value) {
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return field.input_error_message || 'Por favor ingrese un email válido';
+    }
+    
+    // Apply length rules if any
+    const rules = field.validation_rules;
+    if (rules && typeof rules.max_length === 'number' && rules.max_length > 0) {
+      if (value.length > rules.max_length) {
+        return field.input_error_message || `Máximo ${rules.max_length} caracteres`;
+      }
+    }
+    
+    return this.validateAcceptedValues(field, value);
+  },
+
+  // Validate phone fields
+  validatePhoneField(field, value) {
+    // Basic phone validation (digits, spaces, +, -, (, ))
+    const phoneRegex = /^[\d\s\+\-\(\)]+$/;
+    if (!phoneRegex.test(value)) {
+      return field.input_error_message || 'Por favor ingrese un teléfono válido';
+    }
+    
+    return this.validateAcceptedValues(field, value);
+  },
+
+  // Validate select fields
+  validateSelectField(field, value) {
+    // Check if value is in options
+    const options = field.options || [];
+    if (options.length > 0 && !options.includes(value)) {
+      return field.input_error_message || 'Por favor seleccione una opción válida';
+    }
+    
+    return this.validateAcceptedValues(field, value);
+  },
+
+  // Validate multiselect fields
+  validateMultiSelectField(field, values) {
+    const options = field.options || [];
+    
+    // Validate each selected value is in options
+    for (const value of values) {
+      if (options.length > 0 && !options.includes(value)) {
+        return field.input_error_message || 'Una o más opciones seleccionadas no son válidas';
+      }
+    }
+    
+    return this.validateAcceptedValues(field, values);
+  },
+
+  // Validate textarea fields
+  validateTextareaField(field, value) {
+    const rules = field.validation_rules;
+    
+    if (rules && typeof rules.max_length === 'number' && rules.max_length > 0) {
+      if (value.length > rules.max_length) {
+        return field.input_error_message || `Máximo ${rules.max_length} caracteres`;
+      }
+    }
+    
+    return this.validateAcceptedValues(field, value);
+  },
+
+  // Main validation function for a single custom field
+  validateCustomField(field, value) {
+    const { field_type, is_required } = field;
+    
+    // Required validation first
+    if (is_required && (!value || String(value).trim() === '')) {
+      return field.input_error_message || `${field.label} es requerido`;
+    }
+    
+    // If no value AND not required, no format validation needed
+    if (!value || String(value).trim() === '') {
+      return null;
+    }
+    
+    // Type-specific validation
+    switch (field_type) {
+      case 'text':
+        return this.validateTextField(field, value);
+      case 'email':
+        return this.validateEmailField(field, value);
+      case 'phone':
+        return this.validatePhoneField(field, value);
+      case 'select':
+        return this.validateSelectField(field, value);
+      case 'multiselect':
+        return this.validateMultiSelectField(field, Array.isArray(value) ? value : [value]);
+      case 'textarea':
+        return this.validateTextareaField(field, value);
+      case 'checkbox':
+        // Checkbox validation is usually just required/not required
+        return null;
+      default:
+        return this.validateTextField(field, value); // Default to text validation
+    }
+  },
+
+  // Get custom field data by field name
+  getCustomFieldByName(fieldName) {
+    const fields = window.App.data?.customFields || [];
+    return fields.find(f => f.field_name === fieldName);
+  },
+
+  // Show field error
+  showFieldError(fieldElement, errorMessage) {
+    const input = fieldElement.querySelector('input, select, textarea');
+    const errorEl = fieldElement.querySelector('.field-error');
+    
+    if (input) {
+      input.classList.add('error');
+      input.style.borderColor = 'var(--highlight, #e30613)';
+    }
+    
+    if (errorEl) {
+      errorEl.textContent = errorMessage;
+      errorEl.style.color = 'var(--highlight, #e30613)';
+      errorEl.style.display = 'block';
+      errorEl.style.fontSize = '12px';
+      errorEl.style.marginTop = '4px';
+    }
+  },
+
+  // Clear field error
+  clearFieldError(fieldElement) {
+    const input = fieldElement.querySelector('input, select, textarea');
+    const errorEl = fieldElement.querySelector('.field-error');
+    
+    if (input) {
+      input.classList.remove('error');
+      input.style.borderColor = '';
+    }
+    
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+  },
+
+  // Validate all visible custom fields
+  validateAllCustomFields() {
+    let isValid = true;
+    const visibleFields = document.querySelectorAll('.form-field:not([style*="display: none"])');
+    
+    visibleFields.forEach(fieldEl => {
+      if (!fieldEl.classList.contains('cf-for-wallet') && !fieldEl.querySelector('[name="wallet_or_email"]')) {
+        const input = fieldEl.querySelector('input, select, textarea');
+        if (input && input.name.startsWith('cf_')) {
+          const fieldName = input.name.replace('cf_', '');
+          const fieldData = this.getCustomFieldByName(fieldName);
+          
+          if (fieldData) {
+            let value;
+            
+            // Get value based on field type
+            if (fieldData.field_type === 'multiselect') {
+              const checkboxes = fieldEl.querySelectorAll('input[type="checkbox"]:checked');
+              value = Array.from(checkboxes).map(cb => cb.value);
+            } else if (fieldData.field_type === 'checkbox') {
+              value = input.checked;
+            } else {
+              value = input.value;
+            }
+            
+            const error = this.validateCustomField(fieldData, value);
+            
+            if (error) {
+              this.showFieldError(fieldEl, error);
+              isValid = false;
+            } else {
+              this.clearFieldError(fieldEl);
+            }
+          }
+        }
+      }
+    });
+    
+    return isValid;
   },
 
   // ── Format date to DD mm. YY format ──
@@ -529,6 +811,80 @@ window.MintPage = {
       });
     }
 
+    // ── Real-time validation for custom fields ──
+    const customFieldInputs = claimForm.querySelectorAll('input[data-field-type], select[data-field-type], textarea[data-field-type]');
+    customFieldInputs.forEach(input => {
+      const fieldElement = input.closest('.form-field');
+      const fieldName = input.name.replace('cf_', '');
+      
+      const validateField = () => {
+        const fieldData = this.getCustomFieldByName(fieldName);
+        if (fieldData) {
+          let value;
+          
+          // Get value based on field type
+          if (fieldData.field_type === 'multiselect') {
+            const checkboxes = fieldElement.querySelectorAll('input[type="checkbox"]:checked');
+            value = Array.from(checkboxes).map(cb => cb.value);
+          } else if (fieldData.field_type === 'checkbox') {
+            value = input.checked;
+          } else {
+            value = input.value;
+          }
+          
+          const error = this.validateCustomField(fieldData, value);
+          
+          if (error) {
+            this.showFieldError(fieldElement, error);
+          } else {
+            this.clearFieldError(fieldElement);
+          }
+        }
+      };
+
+      // Add event listeners based on input type
+      if (input.type === 'checkbox' || input.type === 'radio') {
+        input.addEventListener('change', validateField);
+      } else {
+        // For text inputs, use debounced validation during typing
+        const debouncedFieldValidation = this.debounce(validateField, 500);
+        input.addEventListener('input', debouncedFieldValidation);
+        input.addEventListener('blur', validateField);
+      }
+    });
+
+    // Special handling for multiselect fields
+    const multiselectFields = claimForm.querySelectorAll('.multiselect-wrapper');
+    multiselectFields.forEach(wrapper => {
+      const fieldElement = wrapper.closest('.form-field');
+      const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
+      const firstCheckbox = checkboxes[0];
+      
+      if (firstCheckbox) {
+        const fieldName = firstCheckbox.name.replace('cf_', '');
+        
+        const validateMultiselect = () => {
+          const fieldData = this.getCustomFieldByName(fieldName);
+          if (fieldData) {
+            const checkedBoxes = wrapper.querySelectorAll('input[type="checkbox"]:checked');
+            const values = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            const error = this.validateCustomField(fieldData, values);
+            
+            if (error) {
+              this.showFieldError(fieldElement, error);
+            } else {
+              this.clearFieldError(fieldElement);
+            }
+          }
+        };
+
+        checkboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', validateMultiselect);
+        });
+      }
+    });
+
     // ── Form submit ──
     claimForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -544,6 +900,12 @@ window.MintPage = {
       }
       if (!mintId.value) {
         if (formError) { formError.textContent = 'No mint code found in URL'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
+        return;
+      }
+
+      // Validate all custom fields
+      if (!this.validateAllCustomFields()) {
+        if (formError) { formError.textContent = 'Por favor corrige los errores en el formulario'; formError.style.color = ERROR_COLOR; formError.style.display = 'block'; }
         return;
       }
 
@@ -574,11 +936,30 @@ window.MintPage = {
           try {
             const customFieldResponses = {};
             (window.App.data?.customFields || []).forEach(field => {
-              const el = claimForm.querySelector(`[name="cf_${field.field_name}"]`);
-              if (el) {
-                const value = field.field_type === 'checkbox' ? String(el.checked) : el.value;
-                if (value && value.trim() !== '') {
-                  customFieldResponses[field.definition_id] = value;
+              let value;
+              
+              // Handle different field types
+              if (field.field_type === 'multiselect') {
+                const fieldElement = claimForm.querySelector(`[name="cf_${field.field_name}"]`)?.closest('.form-field');
+                if (fieldElement) {
+                  const checkedBoxes = fieldElement.querySelectorAll('input[type="checkbox"]:checked');
+                  value = Array.from(checkedBoxes).map(cb => cb.value);
+                  if (value.length > 0) {
+                    customFieldResponses[field.definition_id] = value;
+                  }
+                }
+              } else {
+                const el = claimForm.querySelector(`[name="cf_${field.field_name}"]`);
+                if (el) {
+                  if (field.field_type === 'checkbox') {
+                    value = String(el.checked);
+                    customFieldResponses[field.definition_id] = value;
+                  } else {
+                    value = el.value;
+                    if (value && value.trim() !== '') {
+                      customFieldResponses[field.definition_id] = value;
+                    }
+                  }
                 }
               }
             });
