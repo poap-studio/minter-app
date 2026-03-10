@@ -43,8 +43,16 @@ window.MycollectiblePage = {
     // 1. Theme/CMS data already loaded by router
     const cms = window.App.data?.cms || {};
     const cmsDefaults = window.App.data?.cms_defaults || {};
+    const cmsAdditionals = window.App.data?.cms_additionals || {};
     const setup = window.App.data?.setup || {};
     const raw = window.App.data?.theme?.raw || {};
+    
+    // CMS Additionals with fallbacks for mycollectible page
+    const collectedLabel = cmsAdditionals.mycollectiblepage_collected_label || 'Collected on';
+    const ownedByLabel = cmsAdditionals.mycollectiblepage_owned_by_label || 'OWNED BY:';
+    const poweredByMessage = cmsAdditionals.footer_powered_by_message || 'Powered by POAP STUDIO';
+    const termsLabel = cmsAdditionals.footer_terms_label || 'Terms & Conditions';
+    const privacyLabel = cmsAdditionals.footer_privacy_label || 'Privacy Policy';
 
     // 2. Get claim data (from state or fetch)
     const navState = window.history.state;
@@ -136,7 +144,7 @@ window.MycollectiblePage = {
                       <line x1="8" y1="2" x2="8" y2="6"/>
                       <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    Collected on ${collectedDate}
+                    ${collectedLabel} ${collectedDate}
                   </div>
                 ` : ''}
                 
@@ -146,7 +154,7 @@ window.MycollectiblePage = {
                 <!-- Owner info - left indented, 2 lines -->
                 ${ownerAddress ? `
                   <div class="owner-section">
-                    <div class="owner-label">OWNED BY:</div>
+                    <div class="owner-label">${ownedByLabel}</div>
                     <div class="owner-address">${ownerAddress}</div>
                   </div>
                 ` : ''}
@@ -177,13 +185,13 @@ window.MycollectiblePage = {
                 <img src="${footerLogoSrc || headerLogoSrc}" alt="Footer Logo" class="footer-logo-img">
               </div>
               <div class="footer-right">
-                <span class="footer-powered">Powered by POAP STUDIO</span>
+                <span class="footer-powered">${poweredByMessage}</span>
               </div>
             </div>
             <div class="footer-links">
-              <a href="${termsUrl}" class="footer-link" target="_blank">Terms &amp; Conditions</a>
+              <a href="${termsUrl}" class="footer-link" target="_blank">${termsLabel}</a>
               <span class="footer-sep">|</span>
-              <a href="${privacyUrl}" class="footer-link" target="_blank">Privacy Policy</a>
+              <a href="${privacyUrl}" class="footer-link" target="_blank">${privacyLabel}</a>
             </div>
           </footer>
         </div>

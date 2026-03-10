@@ -97,26 +97,27 @@ window.MintPage = {
   // ── Render main address field with conditional label ──
   renderMainAddressField() {
     const mintingType = window.App.data?.setup?.minting_type || 'all';
+    const cmsAdditionals = window.App.data?.cms_additionals || {};
     let label, inputType, placeholder, errorMessage;
     
     switch (mintingType) {
       case 'mail':
-        label = 'Enter your email:';
+        label = cmsAdditionals.mintform_mainfield_label_email || 'Enter your email:';
         inputType = 'email';
-        placeholder = 'your@email.com';
-        errorMessage = 'Please enter a valid email address';
+        placeholder = cmsAdditionals.mintform_mainfield_placeholder_email || 'your@email.com';
+        errorMessage = cmsAdditionals.mintform_mainfield_error_email || 'Please enter a valid email address';
         break;
       case 'wallet':
-        label = 'Enter your wallet address or ENS:';
+        label = cmsAdditionals.mintform_mainfield_label_wallet || 'Enter your wallet address or ENS:';
         inputType = 'text';
-        placeholder = 'Wallet / ENS';
-        errorMessage = 'Please enter a valid wallet address or ENS domain';
+        placeholder = cmsAdditionals.mintform_mainfield_placeholder_wallet || 'Wallet / ENS';
+        errorMessage = cmsAdditionals.mintform_mainfield_error_wallet || 'Please enter a valid wallet address or ENS domain';
         break;
       default: // 'all'
-        label = 'Enter your wallet address, ENS or email:';
+        label = cmsAdditionals.mintform_mainfield_label_all || 'Enter your wallet address, ENS or email:';
         inputType = 'text';
-        placeholder = 'Wallet / ENS / Email';
-        errorMessage = 'Please enter a valid wallet address, ENS domain or email';
+        placeholder = cmsAdditionals.mintform_mainfield_placeholder_all || 'Wallet / ENS / Email';
+        errorMessage = cmsAdditionals.mintform_mainfield_error_all || 'Please enter a valid wallet address, ENS domain or email';
     }
     
     return `
@@ -269,6 +270,7 @@ window.MintPage = {
     const { collection, code } = window.App.route;
     const cms = window.App.data?.cms || {};
     const cmsDefaults = window.App.data?.cms_defaults || {};
+    const cmsAdditionals = window.App.data?.cms_additionals || {};
     const setup = window.App.data?.setup || {};
     const raw = window.App.data?.theme?.raw || {};
     const mintId = this.resolveMintIdentifier(code);
@@ -283,9 +285,26 @@ window.MintPage = {
     this.mintPageButtonText = cmsDefaults.mintpage_button_text || 'Get Collectible';
     this.mintFormButtonText = cmsDefaults.mintform_button_text || 'Mint';
     
+    // CMS Additionals with fallbacks
+    const checkingLabel = cmsAdditionals.mintpage_checking_label || 'Checking availability...';
+    const showDetailsLabel = cmsAdditionals.mintpage_showdetails_label || 'Show Details';
+    const hideDetailsLabel = cmsAdditionals.mintpage_hidedetails_label || 'Hide Details';
+    const formTitle = cmsAdditionals.mintform_title || 'Get your collectible';
+    const formDescription = cmsAdditionals.mintform_description || 'To secure your collectible we need a few details';
+    const poweredByMessage = cmsAdditionals.footer_powered_by_message || 'Powered by POAP STUDIO';
+    const termsLabel = cmsAdditionals.footer_terms_label || 'Terms & Conditions';
+    const privacyLabel = cmsAdditionals.footer_privacy_label || 'Privacy Policy';
+    
     // Legal URLs with fallbacks
     const termsUrl = setup.terms_url || '#';
     const privacyUrl = setup.privacy_url || '#';
+    
+    // Legal message with placeholder replacement
+    const defaultLegalMessage = 'By clicking below, I agree my data to be used for the creation of POAP Digital collectible under the <a href="{terms_url}">Terms & Conditions</a> and shared with our partner of this activation accordingly to the <a href="{privacy_url}">Privacy Policy</a>.';
+    const legalMessage = cmsAdditionals.legal_message_richtext || defaultLegalMessage;
+    const processedLegalMessage = legalMessage
+      .replace('{terms_url}', termsUrl)
+      .replace('{privacy_url}', privacyUrl);
 
     const appEl = document.getElementById('app');
     if (!appEl) { console.error('[MintPage] #app not found'); window.hideLoading(); return; }
@@ -321,13 +340,13 @@ window.MintPage = {
           <!-- CTA -->
           <p id="cta-error" class="cta-error" style="display:none;"></p>
           <button id="cta-get-card" class="cta-button" disabled>
-            <span class="cta-text">Checking availability...</span>
+            <span class="cta-text">${checkingLabel}</span>
             <span class="cta-spinner"></span>
           </button>
 
           <!-- Accordion toggle -->
           <button id="toggle-details" class="toggle-details">
-            <span id="toggle-text">Show Details</span>
+            <span id="toggle-text">${showDetailsLabel}</span>
             <svg id="toggle-chevron" class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -349,13 +368,13 @@ window.MintPage = {
                 <img src="${raw.footer_logo_url || footerLogoSrc}" alt="Footer Logo" class="footer-logo-img">
               </div>
               <div class="footer-right">
-                <span class="footer-powered">Powered by POAP STUDIO</span>
+                <span class="footer-powered">${poweredByMessage}</span>
               </div>
             </div>
             <div class="footer-links">
-              <a href="${termsUrl}" class="footer-link" target="_blank">Terms &amp; Conditions</a>
+              <a href="${termsUrl}" class="footer-link" target="_blank">${termsLabel}</a>
               <span class="footer-sep">|</span>
-              <a href="${privacyUrl}" class="footer-link" target="_blank">Privacy Policy</a>
+              <a href="${privacyUrl}" class="footer-link" target="_blank">${privacyLabel}</a>
             </div>
           </footer>
         </div>
@@ -364,16 +383,14 @@ window.MintPage = {
       <!-- FORM BOTTOM SHEET -->
       <div id="form-overlay" class="overlay" style="display:none;">
         <div id="form-sheet" class="bottom-sheet">
-          <h2 class="form-title" style="font-family:var(--font-title)">Get your collectible</h2>
-          <p class="form-subtitle" style="font-family:var(--font-body)">To secure your collectible we need a few details</p>
+          <h2 class="form-title" style="font-family:var(--font-title)">${formTitle}</h2>
+          <p class="form-subtitle" style="font-family:var(--font-body)">${formDescription}</p>
           <form id="claim-form" autocomplete="off">
             ${this.renderMainAddressField()}
 
             ${this.renderCustomFields()}
 
-            <p class="form-terms">By clicking on the button below you agree with our
-              <a href="${termsUrl}" target="_blank">Terms &amp; Conditions</a> and <a href="${privacyUrl}" target="_blank">Privacy Policy</a>
-            </p>
+            <p class="form-terms">${processedLegalMessage}</p>
             <p class="form-error" style="display:none; font-size:13px; margin-bottom:12px; text-align:center;"></p>
             <button type="submit" class="cta-button cta-form">
               <span class="cta-text">${this.mintFormButtonText}</span>
@@ -444,10 +461,14 @@ window.MintPage = {
     }
 
     // ── Accordion ──
+    const cmsAdditionals = window.App.data?.cms_additionals || {};
+    const showDetailsLabel = cmsAdditionals.mintpage_showdetails_label || 'Show Details';
+    const hideDetailsLabel = cmsAdditionals.mintpage_hidedetails_label || 'Hide Details';
+    
     toggleBtn.addEventListener('click', () => {
       const isOpen = detailsPanel.classList.toggle('open');
       toggleChevron.classList.toggle('open', isOpen);
-      toggleText.textContent = isOpen ? 'Hide Details' : 'Show Details';
+      toggleText.textContent = isOpen ? hideDetailsLabel : showDetailsLabel;
     });
 
     // ── CTA click → open form ──
@@ -629,8 +650,11 @@ window.MintPage = {
   },
 
   async runAvailabilityFlow(mintId, collection, { ctaGetCard, ctaText, ctaSpinner, ctaError, showCtaError, SUPABASE_URL }) {
+    const cmsAdditionals = window.App.data?.cms_additionals || {};
+    const checkingLabel = cmsAdditionals.mintpage_checking_label || 'Checking availability...';
+    
     ctaGetCard.disabled = true;
-    ctaText.textContent = 'Checking availability...';
+    ctaText.textContent = checkingLabel;
     ctaSpinner.style.display = 'inline-block';
     ctaError.textContent = '';
     ctaError.style.display = 'none';
